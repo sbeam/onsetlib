@@ -1,0 +1,58 @@
+span.rteSwitchTabOn {
+    border: 2px solid black;
+    border-top: 0;
+    padding: 3px;
+    margin: 0 4px 0 4px;
+    color: #000;
+    background: #d5d5c0;
+}
+span.rteSwitchTabOff {
+    border: 2px solid black;
+    border-top: 0;
+    padding: 3px;
+    margin: 0 4px 0 4px;
+    color: #d5d5c0;
+    background: #333;
+}
+
+.rteIframe {
+    font-family: arial,helvetica,sans-serif;
+    background: #eee;
+}
+.rteForm {
+    background: #d2d2d2;
+    color: #000;
+    border: 1px solid #ccc;
+    font-size: 10px;
+    font-family: arial,helvetica,sans-serif;
+}
+div.rteWrapper {
+    border: 2px solid #333;
+    padding: 3px;
+    margin: 0;
+    background-color: #d5d5c0;
+}
+div.rteSwitchTab {
+    height: 18px;
+    margin: -2px 0;
+    margin-top /**/: 1px; /* hides from IE6; no idea why this 3px margin diff is needed */
+}
+div.rteSwitchTab a {
+    color: #d5d5c0 !important; /* IE needs the important */
+    text-decoration: underline;
+}                     
+.rteButtonImg {
+    padding: 1px;
+    border: 1px solid #444;
+    cursor: pointer;
+}
+.rteImageRaised {
+    padding: 0;
+    border: 1px outset #7c7;
+    cursor: pointer;
+}
+.rteImageLowered {
+    padding: 0;
+    border: 1px inset #c80;
+    cursor: pointer;
+}
