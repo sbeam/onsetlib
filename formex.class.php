@@ -159,7 +159,7 @@
 
     use PEAR errors for better error handling when given bad params
 */
-// $Id: formex.class.php,v 1.4 2006/11/14 15:52:12 sbeam Exp $
+// $Id: formex.class.php,v 1.5 2007/02/28 20:04:40 sbeam Exp $
 
 // used for error conditions of individual form elements
 define ('FORMEX_FIELD_NOERR', 0); // no error
@@ -185,7 +185,7 @@ class formex extends PEAR
     /**
      * @var string $left_td_style the html STYLE attribute of the left table column cells (labels)
      */
-    var $left_td_style = "";
+    var $left_td_style = "background: #999999; font-family: sans-serif";
 
     /**
      * @var string $left_td_class the html class attrib of the left table column cells
@@ -496,6 +496,10 @@ class formex extends PEAR
                 case 'colorpicker':
                     $this->_require_extra_js = 1;
                     break;
+                case 'select_bicameral':
+                    $this->_require_extra_js = 1;
+                    $this->set_extra_form_attribs('onsubmit', 'formexBicameralSelectAll()');
+                    break;
                 case 'calendar':
                     $this->_require_extra_js = 1;
                     $this->_require_calendar_js = 1;
@@ -584,14 +588,10 @@ class formex extends PEAR
     */
     function table_row_begin($colspan=0, $align='left') 
     {
-        $class = $this->left_td_class; 
-        if ($colspan == $this->cols_to_span) {
-            $class .= " formLabelColSpan";
-        }
         return sprintf("<tr><td style=\"%s\" valign=\"top\" align=\"%s\" class=\"%s\" %s>", 
                         $this->left_td_style,
                         $align,
-                        $class,
+                        $this->left_td_class,
                         ($colspan)? "colspan=\"$colspan\"" : "");
     }
     /** 
@@ -1114,6 +1114,14 @@ class formex extends PEAR
         }
         return $colmap;
     }
+
+
+    
+     function get_country_opts($iso=false, $code=null)
+     {
+         return formex_field::_get_countries($iso, $code);
+     }
+
 }
 
 /**

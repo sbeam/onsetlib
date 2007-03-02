@@ -70,7 +70,7 @@ define ("MOSH_TOOL_FIELD_STATUS_OK", 0);
 define ("MOSH_TOOL_FIELD_STATUS_REQUIRED", 1);
 define ("MOSH_TOOL_FIELD_STATUS_ERROR", 2);
 
-//   $Id: mosh_tool.class.php,v 1.6 2006/12/12 02:48:33 sbeam Exp $
+//   $Id: mosh_tool.class.php,v 1.7 2007/02/28 20:04:40 sbeam Exp $
 
 class mosh_tool extends PEAR 
 {
@@ -543,7 +543,11 @@ class mosh_tool extends PEAR
                         $map[$k][count($v)-1] = MOSH_TOOL_FIELD_STATUS_ERROR;
                     }
                 }
-                elseif (!isset($this->posted_vars[$ff]) or strlen(trim($this->posted_vars[$ff])) == 0) {
+                elseif (is_array($this->posted_vars[$ff]) && 0 == count($this->posted_vars[$ff])) {
+                    $errs[] = "'$v[0]' is a required selection.";
+                    $map[$k][count($v)-1] = MOSH_TOOL_FIELD_STATUS_ERROR;
+                }
+                elseif (!isset($this->posted_vars[$ff]) or (is_string($this->posted_vars[$ff]) && strlen(trim($this->posted_vars[$ff])) == 0)) {
                     $errs[] = "'$v[0]' is a required field.";
                     $map[$k][count($v)-1] = MOSH_TOOL_FIELD_STATUS_ERROR;
                 }

@@ -420,3 +420,72 @@ function formexACSetFieldValues(e) {
 
     formexACClearTable();
 }
+
+
+
+
+function formexFieldBicameralSelect(elemName, tog) {
+    var picks = document.getElementById(elemName);
+    var pool = document.getElementById(elemName+'_pool');
+    var seen;
+
+    if (tog) {
+        for (i=0; i<pool.options.length; i++) {
+            seen = false;
+
+            if (pool.options[i].selected && !pool.options[i].disabled ) {
+                for (j=0; j<picks.options.length; j++) {
+                    if (picks.options[j].value == pool.options[i].value) { seen = true; }
+                }
+
+                if (!seen) {
+                    picks.options[picks.options.length] = new Option( pool.options[i].text, pool.options[i].value, pool.options[i].defaultSelected, pool.options[i].selected );
+                    pool.options[i].disabled = true;
+                    pool.options[i].selected = true;
+                }
+            }
+        }
+        //picks.options.sort(compareSortText);
+    }
+    else {
+        for (i=0; i<picks.options.length; i++) {
+            if (picks.options[i].selected) {
+                val = picks.options[i].value;
+                picks.options[i] = null;
+                for (j=0; j<pool.options.length; j++) {
+                    if (pool.options[j].value == val) {
+                        pool.options[j].disabled = false;
+                        pool.options[j].selected = false;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+function formexBicameralSelectAll() {
+    spanColl = document.getElementsByTagName('SPAN');
+    for (i=0; i<spanColl.length; i++) {
+        if (spanColl[i].className == 'formexFieldSelect_bicameral') {
+            selects = spanColl[i].getElementsByTagName('SELECT');
+            for (j=0; j<selects[0].options.length; j++) {
+                selects[0].options[j].selected = true;
+            }
+        }
+    }
+}
+
+
+// Compare two options within a list by TEXT
+
+function compareSortText(a, b) { 
+    // Radix 10: for numeric values
+    // Radix 36: for alphanumeric values
+    var sA = parseInt( a.text, 36 );  
+    var sB = parseInt( b.text, 36 );  
+    return sA - sB;
+}
+
+

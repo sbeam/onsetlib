@@ -466,8 +466,9 @@ class formex_field
         // if need be, copy the current vals for safety + reset()
         $postedvals = (is_array($fval))? $fval : array();
 
-        $res = sprintf("<select size=\"%d\" name=\"%s\" class=\"%s\" multiple %s >",
+        $res = sprintf("<select size=\"%d\"id=\"%s\" name=\"%s\" class=\"%s\" multiple %s >",
                         $this->_get_field_size(),
+                        $this->fname,
                         $this->fname . '[]',  // add magic brakets
                         (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
                         $this->extra_attribs);
@@ -487,7 +488,37 @@ class formex_field
     }
     
 
-    
+    /**
+     * returns HTML to create a "Bicameral Selector" or "dueling selects" which is where you
+     * have 2 multi-selects and can shuttle items from one to the other w/ JS magic
+     * @return HTML
+     */
+    function _field_select_bicameral($fval)
+     {
+         // if need be, copy the current vals for safety + reset()
+         $postedvals = (is_array($fval))? $fval : array();
+
+         $opts = $this->opts;
+         $this->opts = $postedvals;
+         $this->attribs['help_text'] = '';
+         $pick_label = (isset($this->attribs['pick_button_label']))? $this->attribs[ 'pick_button_label']:'&lt;&lt;';
+         $drop_label = (isset($this->attribs['drop_button_label']))? $this->attribs[ 'drop_button_label']:'&gt;&gt;';
+
+         $pool = new formex_field($this->fex, $this->name.'_pool', array('Pool', 'select_multiple', $opts, $this->attribs));
+         $op_pick = new formex_field($this->fex, $this->name.'_op_pick', array($pick_label, 'button', null, null, 'onclick="formexFieldBicameralSelect(\''.$this->name. '\', 1)"', 0));
+         $op_drop = new formex_field($this->fex, $this->name.'_op_drop', array($drop_label, 'button', null, null, 'onclick="formexFieldBicameralSelect(\''.$this->name. '\', 0)"', 0));
+
+         $res = "<table border=\"0\"><tr><td valign=\"top\">";
+         $res .= $this->_field_select_multiple($fval);
+         $res .= "</td><td align=\"center\" valign=\"middle\">";
+         $res .= $op_pick->get_html(null);
+         $res .= $op_drop->get_html(null);
+         $res .= "</td><td valign=\"top\">";
+         $res .= $pool->get_html(null);
+         $res .= "</td></tr></table>\n";
+         return $res;
+     }
+
     /*!
     returns html for a set of radio buttons. Enclosed in a simple table - buttons on the right.
     can be overridden if other layouts are needed.
@@ -931,6 +962,26 @@ class formex_field
                         $this->extra_attribs);
         return $res;
     }
+
+     /*!
+     \private
+     returns html for a HTML 4.0 button
+     */
+     function _field_button($fval)
+     {
+         $res = "";
+         if (isset($this->attribs['disable_self_onclick'])) {
+             $this->extra_attribs .= 'onclick="this.disabled=true; this.value=\'please wait...\'"';
+         }
+
+         $res .= sprintf("<input type=\"button\" name=\"%s\" id=\"%s\" value=\"%s\" class=\"%s\" %s />\n",
+                         $this->fname,
+                         $this->fname,
+                         $this->_htmlentities($this->descrip),
+                         (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
+                         $this->extra_attribs);
+         return $res;
+     }
 
 
 
