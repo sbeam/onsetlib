@@ -1,8 +1,8 @@
 <?php
 /**
- * SMRnet DB Container
+ * Onset DB Container
  * 
- * @package smrnet
+ * @package onset
  * @author sbeam <sbeam@onsetcorps.net>
  */
 
@@ -83,6 +83,10 @@ class db_container extends PEAR {
     /** 0 means unlimited */
     var $_range = 0;
 
+    /** name of sequence to get new row'ids from - if null the table name will be used */
+    var $_id_sequence = null;
+
+
     /**
      * constructor function
      * just sets $this->db as a reference to the passed $db object
@@ -158,6 +162,7 @@ class db_container extends PEAR {
         $this->_table = $str;
     }
 
+
     /**
      * retreive name of the main table
      * @return string tablename
@@ -165,6 +170,15 @@ class db_container extends PEAR {
     function get_table_name()
     {
         return $this->_table;
+    }
+
+    /**
+     * set the name of the sequence to use to get row id's from 
+     * @param string $str
+     */
+    function set_sequence($str)
+    {
+        $this->_id_sequence = $str;
     }
 
 
@@ -318,7 +332,8 @@ class db_container extends PEAR {
         else { /* insert to be done */
             if (!is_array($this->_pk_col)) {
                 if (!isset($vals[$this->_pk_col])) { // create new id
-                    $vals[$this->_pk_col] = $this->db->nextId($this->get_table_name());
+                    $seq_name = (!empty($this->_id_sequence))? $this->_id_sequence : $this->get_table_name();
+                    $vals[$this->_pk_col] = $this->db->nextId($seq_name);
                 }
                 $this->set_id($vals[$this->_pk_col]); // note frm here on out, This->_id
             }
@@ -438,6 +453,7 @@ class db_container extends PEAR {
 
         $chunks = array();
         if (!$cols and $this->colmap) {
+
             $cols = array();
             foreach (array_keys($this->colmap) as $c) {
                 if (!in_array($c, array_keys($this->child_relations))) {
