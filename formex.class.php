@@ -870,12 +870,16 @@ class formex extends PEAR
                 $fval = $ffield->descrip; // fool it into putting the "description" on the button
                 $fields[$col] = Array("OP_NAME" => $ffield->fname, // use OP_NAME to set the button's name if needed
                                       "STATUS" => $ffield->error_state,
-                                      "CLASS" => $class);
+                                      "CLASS" => $class,
+                                      "TYPE" => 'submit',
+                                      "NAME" => $col);
             }
             else {
                 $fields[$col] = Array("LABEL" => $ffield->descrip,
                                       "STATUS" => $ffield->error_state,
-                                      "CLASS" => $class);
+                                      "CLASS" => $class,
+                                      "TYPE" => $ffield->type,
+                                      "NAME" => $col);
             }
 
             // get the form element from the approved method
