@@ -780,7 +780,7 @@ class formex_field
         $setup_args = "'$fmt', $showtime";
 
         // vanilla text field where the date is placed...
-        $text = new formex_field($this->fex, $this->fname, array(null, 'text', null, array('class'=>$class), 'onmouseover="initCalendarSetup(this, '.$setup_args.')" readonly="true"', null));
+        $text = new formex_field($this->fex, $this->fname, array(null, 'text', null, array('class'=>"$class magic"), 'onmouseover="initCalendarSetup(this, '.$setup_args.')" readonly="true"', null));
         $res = $text->get_html($dateval);
 
         return $res;
