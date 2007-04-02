@@ -136,6 +136,8 @@ class imagestretcher extends PEAR {
 
         if ($fmt) { // fixup the new filename to have the correct extension
             $new_name = preg_replace('/\.\w+$/', ".$fmt", basename($path));
+            $dir = dirname($path);
+            $path = $dir . '/' . $new_name;
         }
         else { // assume same as the orig
             $fmt = $this->extension;
