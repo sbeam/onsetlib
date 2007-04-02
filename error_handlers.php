@@ -21,7 +21,7 @@ if (!defined('ERROR_EMAIL_SENDER')) {
     define('ERROR_EMAIL_SENDER', 'webmaster@'.SITE_DOMAIN_NAME);
 }
 
-error_reporting(E_ALL & ~E_NOTICE);
+error_reporting(E_ALL);
 
 
 /** map readable names to all the possible PHP error numbers */
