@@ -202,7 +202,7 @@ class db_container extends PEAR {
         if (!$this->_table) {
             return $this->raiseError('must call set_table', DBCON_UNSET_TABLE);
         }
-        if (!$this->_id) {
+        if (!$this->get_id()) {
             return;
         }
 
