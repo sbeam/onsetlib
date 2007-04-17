@@ -105,14 +105,14 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
     // set of errors for which we will send an email to self
     $user_errors = array(E_ERROR, E_WARNING, E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE);
    
-    $err = sprintf("%s [%s: '%s' at line %s of %s]\n",
-                    date('r'),
-                    isset($ERRORTYPES[$errno])? $ERRORTYPES[$errno] : "UNKNOWN ERROR",
-                    str_replace("\n", ' ', $errstr), 
-                    $errline, $errfile);
-
     // save to the error log, and e-mail me if there is a critical user error
     if (defined('SITE_ERROR_LOG_FILE')) {
+        $err = sprintf("%s [%s: '%s' at line %s of %s]\n",
+                        date('r'),
+                        isset($ERRORTYPES[$errno])? $ERRORTYPES[$errno] : "UNKNOWN ERROR",
+                        str_replace("\n", ' ', $errstr), 
+                        $errline, $errfile);
+
         error_log($err, 3, SITE_ERROR_LOG_FILE);
     }
 
@@ -140,7 +140,7 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
 
                 printf("<div class=\"%s\"><b>Error: %s</b></div>",
                         'userError',
-                        $errstr);
+                        htmlspecialchars($errstr));
 
                 foreach ($tpls as $foot) {
                     $foot = preg_replace('/head/', 'foot', $foot);
@@ -151,14 +151,14 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
                 }
             }
             else { // what to do for html wrapper? hmmm...
-                printf("<div class=\"%s\"><b>Error: %s<b></div>", 'userError', $errstr);
+                printf("<div class=\"%s\"><b>Error: %s<b></div>", 'userError', htmlspecialchars($errstr));
             }
             exit -1;
         case E_USER_WARNING:
             if (!preg_match('/^Smarty error:/', $errstr)) {
                 printf("<div class=\"%s\"><b>Warning: %s<b></div>",
                         'userWarning',
-                        $errstr);
+                        htmlspecialchars($errstr));
             }
         default:
             return;
