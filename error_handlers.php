@@ -138,7 +138,7 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
                     }
                 }
 
-                printf("<div class=\"%s\"><b>Error: %s<b></div>",
+                printf("<div class=\"%s\"><b>Error: %s</b></div>",
                         'userError',
                         $errstr);
 
@@ -155,9 +155,11 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
             }
             exit -1;
         case E_USER_WARNING:
-            printf("<div class=\"%s\"><b>Warning: %s<b></div>",
-                    'userWarning',
-                    $errstr);
+            if (!preg_match('/^Smarty error:/', $errstr)) {
+                printf("<div class=\"%s\"><b>Warning: %s<b></div>",
+                        'userWarning',
+                        $errstr);
+            }
         default:
             return;
     }
