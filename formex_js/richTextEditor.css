@@ -41,18 +41,14 @@ div.rteSwitchTab a {
     color: #d5d5c0 !important; /* IE needs the important */
     text-decoration: underline;
 }                     
-.rteButtonImg {
+.rteButtonImg, .rteImageRaised, .rteImageLowered {
     padding: 1px;
     border: 1px solid #444;
     cursor: pointer;
 }
 .rteImageRaised {
-    padding: 0;
-    border: 1px outset #7c7;
-    cursor: pointer;
+    border: 1px solid #7c7;
 }
 .rteImageLowered {
-    padding: 0;
-    border: 1px inset #c80;
-    cursor: pointer;
+    border: 1px solid #c80;
 }
