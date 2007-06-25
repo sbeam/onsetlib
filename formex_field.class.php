@@ -1098,6 +1098,9 @@ EOJS;
         if (isset($this->attribs['ws_path'])) {
             $path = $this->attribs['ws_path'];
         }
+        elseif (defined('SITE_MEDIA_URLPATH')) {
+            $path = SITE_MEDIA_URLPATH;
+        }
 
         $res = "<div class=\"displayWrapper\" style=\"position: relative; margin: 0; padding: 0\">\n";
 
