@@ -452,23 +452,29 @@ class db_container extends PEAR {
     function fetch_any($cols=null, $offset=0, $range=0, $orderby=null, $where='', $orderdir='ASC') {
 
         $chunks = array();
-        if (!$cols and $this->colmap) {
+        /* I no longer understand why SELECT * wouldn't work. maybe before it 
+         * seemed ugly, but now looking at Rails there is nothing to stop us. 
+         * It is def. more convenient because I want to get all the stuff in 
+         * case $cols is null here
+         *
+         * if (!$cols and $this->colmap) {
+         *
+         *  $cols = array();
+         *  foreach (array_keys($this->colmap) as $c) {
+         *      if (!in_array($c, array_keys($this->child_relations))) {
+         *          $cols[] = $c;
+         *      }
+         *  }
+         *  if (is_array($this->_pk_col)) {
+         *      $cols = array_merge($cols, $this->_pk_col);
+         *  }
+         *  else {
+         *      if (is_array($cols) && !in_array($this->_pk_col, $cols)) $cols[] = $this->_pk_col;
+         *  }
+         *}
+         */
 
-            $cols = array();
-            foreach (array_keys($this->colmap) as $c) {
-                if (!in_array($c, array_keys($this->child_relations))) {
-                    $cols[] = $c;
-                }
-            }
-            if (is_array($this->_pk_col)) {
-                $cols = array_merge($cols, $this->_pk_col);
-            }
-            else {
-                if (is_array($cols) && !in_array($this->_pk_col, $cols)) $cols[] = $this->_pk_col;
-            }
-        }
-
-        $orderdir = (substr($orderdir, 0, 1) == 'A')? 'ASC' : 'DESC';
+        $orderdir = (substr($orderdir, 0, 1) == 'A')? 'ASC' : 'DESC'; // this is silly
 
         $sql = $this->_get_fetch_any_sql($cols, $orderby, $where, $orderdir);
 
