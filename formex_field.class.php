@@ -529,19 +529,30 @@ class formex_field
 
         $opts = $this->opts; # $this->_array_stringify($this->opts);
         foreach ($opts as $k => $v) {
-            $res .= sprintf("<tr><td align=\"right\" valign=\"top\"><span class=\"%s\">%s</span></td>",
-                            (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
-                            $v);
-
-            $res .= sprintf("<td align=\"left\"><input type=\"radio\" value=\"%s\" name=\"%s\" id=\"%s\" class=\"%s\" %s %s /></td></tr>\n",
+            $res .= '<tr>';
+            $btn = sprintf("<td><input type=\"radio\" value=\"%s\" name=\"%s\" id=\"%s\" class=\"%s\" %s %s /></td>\n",
                             $k,
                             $this->fname,
                             $this->fname,
                             (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
                             ($fval !== "" && $fval == $k)? "checked=\"1\"" : "",
                             $this->extra_attribs);
+
+            $label = sprintf("<td align=\"%s\" valign=\"top\"><span class=\"%s\">%s</span></td>",
+                            (!empty($this->attribs['buttons_right']))? 'right' : 'left',
+                            (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
+                            $v);
+
+            if (!empty($this->attribs['buttons_right'])) {
+                $res .= $label . $btn;
+            }
+            else {
+                $res .= $btn . $label;
+            }
+            $res .= '</tr>';
+
         }
-        $res .= "</td></tr></table>\n\n";
+        $res .= "</table>\n\n";
         return $res;
     }
 
