@@ -1016,26 +1016,25 @@ class formex_field
     a textarea replacement. Most of the HTML is written using document.write() in richTextEditor.js -
     this file must be located where $this->js_src_dir says it is!
     */
-    function _field_richTextEditor($val) 
+    function _field_richTextEditor($fval) 
     {
-        //$fixname = preg_replace('/[^a-z]*/i', '', $name); // need for DOM-compat? (screws up hidden field match for getRTEContent())
-        $fixname = $this->fname;
-
-        $css = '';
-        if (!empty($this->attribs['css'])) {
-            $css = addslashes($this->attribs['css']);
+        $themes = array('mceAdvanced', 'mceSimple');
+        if (!empty($this->attribs['theme']) && in_array($this->attribs['theme'], $themes)) {
+            $theme = $this->attribs['theme'];
+        }
+        else {
+            $theme = $themes[0];
         }
 
-        $res = "<div id=\"valHolder$fixname\" style=\"display: none\">$val</div>";
+        $cols = (!empty($this->attribs['cols']))? $this->attribs['cols'] : 85;
+        $rows = (!empty($this->attribs['rows']))? $this->attribs['rows'] : 8;
 
-        $hid = new formex_field($this->fex, $this->name, array('valHolder', 'hidden'));
-        $res .= $hid->get_html(null);
-
-        $res .= "
-        <script language=\"JavaScript\" type=\"text/javascript\">
-            writeRichText('$fixname', '', 420, 200, true, false, '$css');
-        </script>
-            ";
+        $res = sprintf("<textarea id=\"%s\" name=\"%s\" rows=\"%d\" cols=\"%d\" class=\"%s\">%s</textarea>",
+                       $this->fname, $this->fname,
+                       $rows,
+                       $cols,
+                       $theme,
+                       $this->_htmlentities($fval));
 
         return $res;
     }

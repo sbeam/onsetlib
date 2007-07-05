@@ -95,7 +95,6 @@ function writeRichText(rte, html, width, height, buttons, readOnly, localCSS) {
 		if (buttons == true) {
 			document.writeln('<table class="rteBack" id="Buttons1_' + rte + '">');
 			document.writeln('	<tr>');
-            document.writeln('		<td><img class="rteButtonImg" src="'+imagesPath+'post_button_reset.gif" width="17" height="17" alt="Clear Text" title="Clear Content" onClick="ResetForm(\''+rte+'\')"></td>');
 			document.writeln('		<td>');
 			document.writeln('			<select class="rteForm" id="formatblock_' + rte + '" onchange="selectFont(\'' + rte + '\', this.id);">');
 			document.writeln('				<option value="">[Style]</option>');
@@ -132,6 +131,7 @@ function writeRichText(rte, html, width, height, buttons, readOnly, localCSS) {
 			document.writeln('				<option value="7">7</option>');
 			document.writeln('			</select>');
 			document.writeln('		</td>');
+            document.writeln('		<td><img class="rteButtonImg" src="'+imagesPath+'post_button_reset.gif" width="17" height="17" alt="Clear Text" title="Clear Content" onClick="ResetForm(\''+rte+'\')"></td>');
 			document.writeln('		<td width="100%">');
 			document.writeln('		</td>');
 			document.writeln('	</tr>');
@@ -373,7 +373,7 @@ function dlgInsertTable(rte, command) {
 }
 
 function dlgInsertLink(rte, command) {
-    var szURL = prompt("Enter a URL:", "");
+    var szURL = prompt("Enter a URL:", "http://");
     if (szURL && szURL != 'http://') {
         document.getElementById('editFrame'+rte).contentWindow.document.execCommand("CreateLink",false,
 szURL);

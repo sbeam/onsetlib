@@ -517,8 +517,8 @@ class formex extends PEAR
                     $this->_require_extra_js = 1;
                     break;
                 case 'richTextEditor':
-                    $this->set_extra_form_attribs('onsubmit', 'getRteContent()');
-                    $this->_preload_funcs['richTextEditor'] = 'initRTE();';
+                    #$this->set_extra_form_attribs('onsubmit', 'getRteContent()');
+                    #$this->_preload_funcs['richTextEditor'] = 'initRTE();';
                     $this->_has_richTextEditor = 1;
             }
         }
@@ -794,21 +794,19 @@ class formex extends PEAR
             $res .= '<script type="text/javascript" src="'.$dir.'/autocomplete.js" ></script>';
         }
         if ($this->_has_richTextEditor) {
-            $res .= "\n<script type=\"text/javascript\">
-                       var rteRootUrl = '". $this->rte_js_src_dir ."';
-                       </script>\n";
+            $js = 'tinymce/jscripts/tiny_mce/tiny_mce.js';
+            $js2 = 'rte-tinymce.js';
+            $css = 'tinymce/jscripts/tiny_mce/tiny_mce.js';
             if ($this->js_src_inline) {
-                if (!$content = file_get_contents('formex_js/richTextEditor.js', 1)) {
-                    $content = "alert('ERROR: formex() richTextEditor.js sources count not be found in include_path')";
-                }
-                #if ($content = file_get_contents('formex_js/richTextEditor.css', 1)) {
-                #    $res .= "<style type=\"text/css\">\n\n$content\n\n</style>";
-                #}
+                $content = "alert('formex(): js_src_inline is deprecated for _field_richTextEditor')";
+                $res = '<script type="text/javascript"><!--' . "\n";
+                $res .= $content . "\n// -->\n";
+                $res .= '</script>';
             }
             else {
-                $res .= sprintf("<script type=\"text/javascript\" src=\"%s/richTextEditor.js\"></script><link rel=\"stylesheet\" type=\"text/css\" href=\"%s/richTextEditor.css\">",
-                                $this->rte_js_src_dir,
-                                $this->rte_js_src_dir);
+                $res .= "<script type=\"text/javascript\" src=\"{$this->rte_js_src_dir}/$js\"></script>
+                         <script type=\"text/javascript\" src=\"{$this->rte_js_src_dir}/$js2\"></script>
+                         <link rel=\"stylesheet\" type=\"text/css\" href=\"{$this->rte_js_src_dir}/$css\">";
             }
         }
         return $res;
