@@ -1027,7 +1027,7 @@ class formex_field
         }
 
         $cols = (!empty($this->attribs['cols']))? $this->attribs['cols'] : 85;
-        $rows = (!empty($this->attribs['rows']))? $this->attribs['rows'] : 8;
+        $rows = (!empty($this->attribs['rows']))? $this->attribs['rows'] : 10;
 
         $res = sprintf("<textarea id=\"%s\" name=\"%s\" rows=\"%d\" cols=\"%d\" class=\"%s\">%s</textarea>",
                        $this->fname, $this->fname,
