@@ -123,10 +123,17 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
     // add html comment so we can view source if need be.
     // print("<!-- $errno at line $errline of $errfile -->");
 
+    $errstr = preg_replace('/DEBUGINFO:\{(.*?)\}:/', '', $errstr);
+
     // only show user errs/warns, the rest, pretend they didnt happen
     switch ($errno) {
         case E_USER_ERROR:
             $tpls = array('error_header', 'user_error_header', 'site_head', 'site_header');
+
+            $msg = sprintf("<div class=\"userError\">Sorry, an error has occurred while attempting to process your
+                             request. System administrators have been notified and will address the issue
+                             as soon as possible.  <div>Information: &quot;%s&quot;</div></div>",
+                             htmlentities($errstr));
 
             if (isset($smarty)) {
                 if (!isset($smarty->_tpl_vars['header_sent'])) {
@@ -138,9 +145,7 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
                     }
                 }
 
-                printf("<div class=\"%s\"><b>Error: %s</b></div>",
-                        'userError',
-                        htmlspecialchars($errstr));
+                print $msg;
 
                 foreach ($tpls as $foot) {
                     $foot = preg_replace('/head/', 'foot', $foot);
@@ -151,7 +156,7 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
                 }
             }
             else { // what to do for html wrapper? hmmm...
-                printf("<div class=\"%s\"><b>Error: %s<b></div>", 'userError', htmlspecialchars($errstr));
+                print $msg;
             }
             exit -1;
         case E_USER_WARNING:
@@ -169,7 +174,7 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
 formats a detailed err msg from a PEAR::Error object, and passes to the function  defined
 in set_error_handler() (see init.php) ***/
 function pear_error_handler (&$err_obj) {
-    $error_string = sprintf("%s [%s]\n\n(%s)",
+    $error_string = sprintf("%s\n\nDEBUGINFO:{ [errorCode=%s] %s}:",
                             $err_obj->getMessage(),
                             $err_obj->getCode(),
                             $err_obj->getDebugInfo());
@@ -265,7 +270,7 @@ if (isset($db) and is_object($db) and is_a($db) == 'DB') {
 // handles uncaught exceptions
 // http://us2.php.net/manual/en/function.set-exception-handler.php
 function my_exception_handler($e) {
-    $error_string = sprintf("'%s' [%s] at line %d of %s\n\nTrace:\n%s",
+    $error_string = sprintf("%s DEBUGINFO:{ [%s] at line %d of %s\n\nTrace:\n%s }:",
                             $e->getMessage(),
                             $e->getCode(),
                             $e->getLine(),
