@@ -123,7 +123,7 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
     // add html comment so we can view source if need be.
     // print("<!-- $errno at line $errline of $errfile -->");
 
-    $errstr = preg_replace('/DEBUGINFO:\{(.*?)\}:/', '', $errstr);
+    $errstr = preg_replace('/DEBUGINFO:\{(.*?)\}:/s', '', $errstr);
 
     // only show user errs/warns, the rest, pretend they didnt happen
     switch ($errno) {
