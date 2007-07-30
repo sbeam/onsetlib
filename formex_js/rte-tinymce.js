@@ -18,5 +18,8 @@ tinyMCE.init({
     theme_advanced_buttons1 : "formatselect,separator,bold,italic,underline,separator,justifyleft,justifycenter,justifyright,separator,bullist,numlist,separator,outdent,indent,separator,forecolor,backcolor",
     theme_advanced_buttons2 : "link,unlink,anchor,separator,image,charmap,hr,separator,visualaid,removeformat,cleanup,code,separator,undo,redo",
     theme_advanced_buttons3 : "",
-    convert_fonts_to_spans : true
+    convert_fonts_to_spans : true,
+    relative_urls : false,
+    remove_script_host : true,
+    convert_urls : false
 });
