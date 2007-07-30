@@ -109,6 +109,11 @@ class res_pager {
      */
     var $page_var = 'page';
 
+    /*
+     * max number of "pages" to display in the list
+     */
+    var $max_pagecount = 0;
+
     /**
      * initializes the three vars that are used to calculate the rest
      * 
@@ -118,11 +123,12 @@ class res_pager {
      * @param int optional - how many to show on the 'first' page - ie 10 on page 1, 50 on the rest
 	 * @return an instance
      */
-    function __construct($from, $to, $num, $page1_size=0) {
+    function __construct($from, $to, $num, $page1_size=0, $max_pagecount=0) {
         //if (!is_numeric($from)
         $this->offset = $from;
         $this->range = $to;
         $this->numrows = $num;
+        $this->max_pagecount = $max_pagecount;
 
         if ($page1_size) {
             $this->page1_range = $page1_size;
@@ -131,8 +137,8 @@ class res_pager {
         $this->build();
     }
 
-    function res_pager($from, $to, $num, $page1_size=0) {
-        $this->__construct($from, $to, $num, $page1_size);
+    function res_pager($from, $to, $num, $page1_size=0, $max_pagecount=0) {
+        $this->__construct($from, $to, $num, $page1_size, $max_pagecount);
     }
 
 
@@ -150,7 +156,9 @@ class res_pager {
                         'from'    => $this->from,    // the row to start fetching
                         'to'      => $this->to,      // the row to stop fetching
                         'limit'   => $this->limit,   // How many results per page
-                        'pages'   => $this->pages);
+                        'pages'   => $this->pages,
+                        'start_page' => $this->start_page,
+                        'end_page' => $this->end_page);
 
         return $struct;
     }
@@ -224,6 +232,26 @@ class res_pager {
                 $this->remain = $this->range;
             }
             $this->to = $this->current * $this->range;
+        }
+
+        // truncate the list of pages to a range of max_pagecount around current
+        if (!empty($this->max_pagecount) && $numpages > $this->max_pagecount) {
+            $a = $this->current - intval($this->max_pagecount/2); // current - half the max, or zero
+            $this->start_page = ($a < 0)? 0 : $a;
+
+            $a = $this->current + ceil($this->max_pagecount/2); // current + half the max, or the end
+            if ($a >= $numpages) {
+                $this->start_page = $numpages - $this->max_pagecount; // adjust the beginning
+                $this->end_page = 0;
+            }
+            else {
+                $this->end_page = $a+1;
+            }
+        }
+        else { // no limits
+            $this->start_page = 0;
+            $this->end_page = 0;
+            $this->max_pagecount = $numpages+1;
         }
 
         $this->numrows = $this->numrows;
