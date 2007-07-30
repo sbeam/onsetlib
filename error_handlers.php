@@ -102,9 +102,6 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
 
     if( ( $errno & error_reporting() ) != $errno ) return;
 
-    // set of errors for which we will send an email to self
-    $user_errors = array(E_ERROR, E_WARNING, E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE);
-   
     // save to the error log, and e-mail me if there is a critical user error
     if (defined('SITE_ERROR_LOG_FILE')) {
         $err = sprintf("%s [%s: '%s' at line %s of %s]\n",
@@ -116,19 +113,19 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
         error_log($err, 3, SITE_ERROR_LOG_FILE);
     }
 
-    if (in_array($errno, $user_errors)) {
+    // set of errors for which we will send an email to self
+    $mail_worthy_errors = E_ERROR | E_WARNING | E_USER_ERROR | E_USER_WARNING;
+   
+    if (($errno & $mail_worthy_errors) != 0) {
         error_mail_alert ($errno, $errstr, $errfile, $errline);
     }
-
-    // add html comment so we can view source if need be.
-    // print("<!-- $errno at line $errline of $errfile -->");
 
     $errstr = preg_replace('/DEBUGINFO:\{(.*?)\}:/s', '', $errstr);
 
     // only show user errs/warns, the rest, pretend they didnt happen
     switch ($errno) {
         case E_USER_ERROR:
-            $tpls = array('error_header', 'user_error_header', 'site_head', 'site_header');
+            $tpls = array('error_header', 'user_error_header', 'site_head', 'site_header', 'header');
 
             $msg = sprintf("<div class=\"userError\">Sorry, an error has occurred while attempting to process your
                              request. System administrators have been notified and will address the issue
@@ -163,9 +160,11 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
             if (!preg_match('/^Smarty error:/', $errstr)) {
                 printf("<div class=\"%s\"><b>Warning: %s<b></div>",
                         'userWarning',
-                        htmlspecialchars($errstr));
+                        htmlentities($errstr));
             }
         default:
+            // add html comment so we can view source if need be.
+            #print "<!-- " . htmlentities("'$errstr' at line $errline of $errfile") . " -->";
             return;
     }
 }
