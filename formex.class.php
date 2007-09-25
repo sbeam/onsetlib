@@ -167,6 +167,7 @@ define ('FORMEX_FIELD_REQUIRED', 1); // no error, but field is required
 define ('FORMEX_FIELD_ERROR', 2); // field was required, there has been an error
 
 require_once('formex_field.class.php');
+require_once('formex_tag.smarty.php');
 
 /**
  *  formex() - form controller class
@@ -866,29 +867,29 @@ class formex extends PEAR
 
             if ($ffield->type == 'submit') { // submit buttons are very weird
                 $fval = $ffield->descrip; // fool it into putting the "description" on the button
-                $fields[$col] = Array("OP_NAME" => $ffield->fname, // use OP_NAME to set the button's name if needed
-                                      "STATUS" => $ffield->error_state,
-                                      "CLASS" => $class,
-                                      "TYPE" => 'submit',
-                                      "NAME" => $col);
+                $fields[$col] = Array("op_name" => $ffield->fname, // use OP_NAME to set the button's name if needed
+                                      "status" => $ffield->error_state,
+                                      "class" => $class,
+                                      "type" => 'submit',
+                                      "name" => $col);
             }
             else {
-                $fields[$col] = Array("LABEL" => $ffield->descrip,
-                                      "STATUS" => $ffield->error_state,
-                                      "CLASS" => $class,
-                                      "TYPE" => $ffield->type,
-                                      "NAME" => $col);
+                $fields[$col] = Array("label" => $ffield->descrip,
+                                      "status" => $ffield->error_state,
+                                      "class" => $class,
+                                      "type" => $ffield->type,
+                                      "name" => $col);
             }
 
             // get the form element from the approved method
             if (!method_exists($ffield, 'get_html')) {
                 $this->raiseError("'$ffield' is not a field object.", E_USER_ERROR);
             }
-            $fields[$col]["TAG"] = $ffield->get_html($fval);
+            $fields[$col]["tag"] = $ffield->get_html($fval);
 
             // put the hidden fields in their own special place also
             if ($ffield->type == 'hidden') {
-                $fields["HIDDENS"] .= $fields[$col]["TAG"];
+                $fields["HIDDENS"] .= $fields[$col]["tag"];
             }
         }
         $fields["FORM"] =  $this->_js_script_tags() . $this->form_start();
@@ -990,6 +991,20 @@ class formex extends PEAR
         print $this->render_form();
     }
 
+
+    /**
+     * grab an array of all formex_field objects we are responsible for, indexed by name
+     * @return array
+     */
+    function get_elems()
+    {
+        $elems = array();
+        foreach ($this->_elems as $k => $e) {
+            $elems[$k] = $e;
+            unset ($elems[$k]->fex);
+        }
+        return $elems;
+    }
 
     /**
      * sets options for a select*, radio, or other element that takes an array
@@ -1123,6 +1138,46 @@ class formex extends PEAR
      {
          return formex_field::_get_countries($iso, $code);
      }
+
+
+
+   /**
+    * use mosh_tool to check $posted against the current instance's colmap version for validity
+    * @param $posted array the values to be checked (usually $_POST or $_GET)
+    * @return false if passed, otherwise an list of error messages
+    */
+    function check_submission($posted)
+    {
+        $mosh = $this->_mosh_tool_singleton($posted);
+
+        return $mosh->check_form($this->get_colmap());
+    }
+
+
+   /**
+    * use mosh_tool to grab the subset of values we are looking for from what 
+    * was sent to the caller in POST or GET. We are looking only for values 
+    * whose keys correspond with those in our $colmap.
+    * @param $posted array the values to be checked (usually $_POST or $_GET)
+    * @return hash of values, indexed by the same keys in $this->_colmap
+    */
+    function get_submitted_vals($posted) {
+        $mosh = $this->_mosh_tool_singleton($posted);
+        return $mosh->get_form_vals($this->get_colmap());
+    }
+
+    /**
+     * singleton method to keep from wasting mosh_tool instances
+     * @param $posted hash the keys=>values mosh tool will be concerned with
+     * @return mosh_tool instance
+     */
+    function _mosh_tool_singleton($posted) {
+        if (!isset($this->_mosh)) {
+            $this->_mosh = new mosh_tool($posted);
+            $this->_mosh->form_field_prefix = $this->field_prefix;
+        }
+        return $this->_mosh;
+    }
 
 }
 
