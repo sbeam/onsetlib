@@ -165,25 +165,38 @@ class uploadable extends PEAR {
        if ($this->_newname) {
            return $this->_newname;
        }
+
+       $orig = $this->fileparams['name'];
+       $this->extension = substr($orig, strrpos($orig, '.'));
+
        if (isset($this->params["fnamebase"])) {
            $this->_newname = preg_replace("/\s/", "_", $this->params["fnamebase"]);
            $this->_newname = preg_replace("/[^A-Za-z0-9_.-]/", "", $this->_newname);
        }
        elseif ($this->preserve_original_name ) {
            // remove extension and replace with a uniqid()
-           $orig = $this->fileparams['name'];
            $this->_newname = substr($orig, 0, strrpos($orig, '.'));
            $this->_newname = preg_replace("/\s/", "_", $this->_newname);
            $this->_newname = preg_replace("/[^A-Za-z0-9_.-]/", "", $this->_newname);
            if ($this->unique_filename) {
                $this->_newname .= '.'. uniqid('U');
            }
+           else {
+               if (file_exists($this->params["path"] . "/" . $orig)) {
+                   $inc = 1;
+                   $base = $this->_newname;
+                   do {
+                       $this->_newname = $base . '.' . $inc;
+                       $toSave = $this->params["path"]  .'/'. $this->_newname . $this->extension;
+                       $inc++;
+                   }
+                   while (file_exists($toSave));
+               }
+           }
        }
        else { $this->_newname = uniqid('up'); }
 
        if (!isset($this->params["allowed"]) or $this->skip_filetype_check) { // put the old extension back
-           $orig = $this->fileparams['name'];
-           $this->extension = substr($orig, strrpos($orig, '.'));
            $this->_newname .= $this->extension;
        }
        else {
