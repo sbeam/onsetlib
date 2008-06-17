@@ -204,9 +204,7 @@ class uploadable extends PEAR {
 
            // find the right extension based on the mime-type the browser told us
            if ($this->debug) echo "using $extension because of " .$this->fileparams['type']. "<br>";
-           if (!isset($this->params["allowed"]) or $this->params["allowed"] == 'any'
-            or (isset($allowed[$this->fileparams['type']])
-                and $this->extension = $allowed[$this->fileparams['type']])) {
+           if (!isset($this->params["allowed"]) or $this->params["allowed"] == 'any' or (isset($allowed[$this->fileparams['type']]))) {
                $this->_newname .= $this->extension; // make sure the name is mangled appropriately
                return $this->_newname;
            }
