@@ -431,6 +431,8 @@ class formex extends PEAR
         }
 
         $this->db_row = &$this->elem_vals; // bc compat
+
+        $this->back_compat_uc_field_keys = (defined('FORMEX_BACK_COMPAT_UC_FIELD_KEYS') and FORMEX_BACK_COMPAT_UC_FIELD_KEYS);
     }
 
 
@@ -886,11 +888,20 @@ class formex extends PEAR
                 $this->raiseError("'$ffield' is not a field object.", E_USER_ERROR);
             }
             $fields[$col]["tag"] = $ffield->get_html($fval);
-
+            //
             // put the hidden fields in their own special place also
             if ($ffield->type == 'hidden') {
                 $fields["HIDDENS"] .= $fields[$col]["tag"];
             }
+
+            /* uppercase LABEL, STATUS, etc. for smarty templates that still expect that. LAME */
+            if ($this->back_compat_uc_field_keys) {
+                foreach ($fields[$col] as $k => $v) {
+                    $fields[$col][strtoupper($k)] = $v;
+                    unset($fields[$col][$k]);
+                }
+            }
+
         }
         $fields["FORM"] =  $this->_js_script_tags() . $this->form_start();
 
