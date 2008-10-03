@@ -146,18 +146,21 @@
  *    The class formex_field provides the numerous handler methods for the various
  *    field types. Each element is cast as a member object of the formex_field class.
  *
- *    This class integrates nicely with the mosh_tool class which has several
- *    methods useful for checking form data and assembing it into SQL-statements
- *    (or fragments thereof) These can be used seamlessly within the same script.
+ * @changelog
+ * 2.0 Thu Sep 25 2008
+ *      - remove all interdependency with mosh_tool, and bring in the validation() 
+ *      and get_submitted_vals() code from that with claneup to do the job. 
+ *      - bring in a lot of the old mosh_tool validation functions like 
+ *      is_proper_date() in as static methods.
+ *      - add private/protected keywords where appropriate
+ * 1.6 Tue Sep 16 2008
+ *      - add get_submitted_vals() and validation() methods to handle invocation of mosh_tool to do the validation, removing some of the tedious steps in this common process
+ * 1.4  Thu Jan 13 2005 
+ *      - add set_elem_vals() method which was sorely needed
+ *      - add $instance_token and logic to include a unique identifier with each invocation 
+ *      - updated comments in this file for phpdocumentor style
  *
-*/
-
-/*!TODO
-    javascript checking (esp. for field_date) (we do everything server-side -
-        if you want special JS functions attached to onSubmit or elements, see
-        set_extra_form_attribs() and set_elem_extra_attribs()
-
-    use PEAR errors for better error handling when given bad params
+ *
 */
 // $Id: formex.class.php,v 1.5 2007/02/28 20:04:40 sbeam Exp $
 
@@ -1048,12 +1051,16 @@ class formex extends PEAR
         $this->_elems[$elem]->attribs[$attrib] = $val;
     }
     
+    /**
+     * set the 'help_text' attrib for a given element. This could be displayed however the view/template wants to do it.
+     * @param string $elem name of the element
+     * @param string $txt text to set
+     */
     function set_elem_helptext($elem, $txt)
     {
-        if (!is_object($this->_elems[$elem])) {
-            $this->raiseError("$elem is not a field object");
+        if (isset($this->_elems[$elem]) && is_object($this->_elems[$elem])) {
+            $this->_elems[$elem]->help_text = $txt;
         }
-        $this->_elems[$elem]->help_text = $txt;
     }
     
     /**
@@ -1134,13 +1141,15 @@ class formex extends PEAR
      * mosh_tool for validation purposes. 
     */
     function get_colmap() {
-        $colmap = array();
-        foreach ($this->_elems as $name => $e) {
-            $req  = ($e->error_state == FORMEX_FIELD_REQUIRED)? true : false;
-            $colmap[$name] = array($e->descrip, $e->type, $e->opts, $e->attribs, $e->extra_attribs, $req);
+        if (empty($this->_colmap)) {
+            $this->_colmap = array();
+            foreach ($this->_elems as $name => $e) {
+                $req  = ($e->error_state == FORMEX_FIELD_REQUIRED)? true : false;
+                $this->_colmap[$name] = array($e->descrip, $e->type, $e->opts, $e->attribs, $e->extra_attribs, $req);
 
+            }
         }
-        return $colmap;
+        return $this->_colmap;
     }
 
 
@@ -1151,54 +1160,273 @@ class formex extends PEAR
      }
 
 
-
-   /**
-    * use mosh_tool to check $posted against the current instance's colmap version for validity
-    * @param $posted array the values to be checked (usually $_POST or $_GET)
-    * @return false if passed, otherwise an list of error messages
-    */
-    function check_submission($posted)
+    /**
+     * use mosh_tool to check $posted against the current instance's colmap versi on for validity
+     * @param $posted array the values to be checked (usually $_POST or $_GET)
+     * @return false if passed, otherwise an list of error messages
+     */
+    function validate($posted)
     {
-        $mosh = $this->_mosh_tool_singleton($posted);
+        $errs = array();
 
-        return $mosh->check_form($this->get_colmap());
+        if (!is_array($posted)) {
+            trigger_error("check_form(): argument is not an array", E_USER_NOTICE);
+            return false;
+        }
+
+        foreach (array_keys($this->_elems) as $k) {
+
+            if ($this->_elems[$k]->error_state === FORMEX_FIELD_REQUIRED) {
+
+                $ff = $this->field_prefix . $k;  //shorthand
+                $ferr = null;
+
+                switch ($this->_elems[$k]->type) {
+
+                    case 'date':
+                    case 'date_us':
+                        $day = (!empty($this->_elems[$k]->attribs['suppress_day']))? '01' : sprintf("%d", $posted[$ff . "_day"]);
+
+                        $datefields = array(sprintf("%d", $posted[$ff . "_month"]),
+                                            $day,
+                                            sprintf("%04d", $posted[$ff . "_year"])
+                                            ); 
+
+                        if (!self::is_proper_date($datefields)) {
+                            $ferr = "'%s' is not a valid date.";
+                        }
+                        break;
+
+                    case 'date_text':
+                        if (!self::is_proper_date($posted[$ff])) {
+                            $ferr = "'%2\$s' in '%1\$s' is not a valid date.";
+                        }
+                        break;
+
+                    case 'numeric':
+                        if (!empty($posted[$ff]) && !is_numeric(trim($posted[$ff]))) {
+                            $ferr = "'%s' must be a numeric value."; 
+                        }
+                        break;
+
+                    case 'file':
+                    case 'image_upload':
+                        if (!isset($_FILES[$ff])) {
+                            $ferr = "%s' must be uploaded";
+                        }
+                        break;
+
+                    case 'select_or':
+                        if (empty($posted[$ff]) and empty($posted[$ff.'_aux'])) {
+                            $ferr = "'%s' is a required field.";
+                        }
+                        break;
+
+                    case 'email':
+                        if (!empty($posted[$ff]) && !self::is_proper_email($posted[$ff])) {
+                            $ferr = "'%2\$s' is not a valid email address. Please enter a complete
+                                        email address, i.e. 'jdoe@example.com', in the '%1\$s' field.";
+                        }
+
+                    default:
+                        if (isset($posted[$ff]) && is_array($posted[$ff]) && 0 == count($posted[$ff])) {
+                            $ferr = "'%s' is a required selection.";
+                        }
+                        elseif (!isset($posted[$ff]) or (is_string($posted[$ff]) && strlen(trim($posted[$ff])) == 0)) {
+                            $ferr = "'%s' is a required field.";
+                        }
+                }
+
+                if ($ferr) {
+                    $this->_elems[$k]->set_error();
+                    $errs[] = sprintf($ferr, $this->_elems[$k]->descrip, $posted[$ff]);
+                }
+            }
+        }
+        if (count($errs) > 0) {
+            return $errs;
+        }
     }
 
 
-   /**
-    * use mosh_tool to grab the subset of values we are looking for from what 
-    * was sent to the caller in POST or GET. We are looking only for values 
-    * whose keys correspond with those in our $colmap.
-    * @param $posted array the values to be checked (usually $_POST or $_GET)
-    * @return hash of values, indexed by the same keys in $this->_colmap
-    */
-    function get_submitted_vals($posted) {
-        $mosh = $this->_mosh_tool_singleton($posted);
-        return $mosh->get_form_vals($this->get_colmap());
-    }
+
+
+
 
     /**
-     * singleton method to keep from wasting mosh_tool instances
-     * @param $posted hash the keys=>values mosh tool will be concerned with
-     * @return mosh_tool instance
+     * use mosh_tool to grab the subset of values we are looking for from what
+     * was sent to the caller in POST or GET. We are looking only for values
+     * whose keys correspond with those in our $colmap.
+     * @param $posted array the values to be checked (usually $_POST or $_GET)
+     * @return hash of values, indexed by the same keys in $this->_elems
      */
-    function _mosh_tool_singleton($posted) {
-        if (!isset($this->_mosh)) {
-            $this->_mosh = new mosh_tool($posted);
-            $this->_mosh->form_field_prefix = $this->field_prefix;
+    public function get_submitted_vals($posted) {
+
+        $vals = array();
+        foreach (array_keys($this->_elems) as $k) {
+
+            $ff = $this->field_prefix . $k; // shorthand.
+
+            switch ($this->_elems[$k]->type) {
+
+                case 'date':
+                case 'datetime':
+                    $vals[$k] = self::join_date_fields_to_str($posted, $ff, 0);
+                    break;
+
+                case 'date_us':
+                    $vals[$k] = self::join_date_fields_to_str($posted, $ff, 1);
+                    break;
+
+                // special case for checkboxes which may or may not exist, and need to be 0/1 either way
+                case 'toggle':
+                case 'checkbox':
+                    $vals[$k] = isset($posted[$ff]);
+                    break;
+
+                case 'calendar':
+                    $vals[$k] = date('Y-m-d H:i:s', strtotime($posted[$ff]));
+
+                case 'heading':
+                    // do nothing, its a heading
+                    break;
+
+                case 'select_or':
+                    $aux = $ff . '_aux';
+                    $vals[$k] = (!empty($posted[$aux]))? $posted[$aux] : $posted[$ff];
+                    break;
+
+                default:
+                    if (isset($posted[$ff])) {
+                        $vals[$k] = $posted[$ff];
+                    }
+            }
+
         }
-        return $this->_mosh;
+        return $vals;
+
     }
+
+
+
+
+    /* ========== lookout the static functions are coming ================== */
+
+
+
+
+    /**
+     * tries to make sure a date is properly formatted and valid, based on
+     * $date_format and using the native checkdate() function to make
+     * sure nobody gives you a Feb.31
+     *       
+     * @param $date string to be checked in YYYY-MM-DD format or an array like MM,DD,YYYY
+     * @return bool
+     * @static
+     * @public
+    */
+    static public function is_proper_date($date, $format) 
+    {
+        if (!is_array($date)) { // check string format
+            if (!preg_match(self::date_format, $date, $m)) return;
+            list($y,$m,$d) = array($m[1],$m[2],$m[3]);
+        }
+        else {
+            list($m,$d,$y) = $date; // legacy passed in arr. as MM,DD,YY
+        }
+
+        return (count($date) == 3 and checkdate($m,$d,$y));
+    }
+
+
+    /**
+     * looks for a 'normal' style email address, i.e. has a '@' and a dot.
+     * @param $str string to be checked
+     * @return bool
+     * @static
+     * @public
+     */
+    static public function is_proper_email($str) 
+    {
+        return (preg_match("/^([-a-zA-Z0-9_.]+)@(([-a-zA-Z0-9_]+[.])+[a-zA-Z]+)$/", $str));
+    }
+
+
+
+
+
+    /**
+     * looks for a date or datetime set of fields in the $posted array keys by 
+     * the given $k. Finding matches for $k, it be joining 3 fields that make 
+     * up a date field in formex() (or 6/7 for a datetime field). It returns 
+     * the resultant date as a string which in the default format will go 
+     * happily into the date or datetime fields of mysql or pgsql.
+     *
+     * returns format like "YYYY-MM-DD" by default or "YYYY-MM-DD HH:MM:SS" if 
+     * time was included. We don't have any way of knowing the time zone or DST 
+     * status right now.
+     *
+     * @param $posted associative array of keys=>values where our date info might be hiding
+     * @param $ff string key/name for the date field
+     * @param $us_fmt return the US date format instead (M/D/Y)?
+     * @return string
+     * @static
+     * @public
+     */
+    public static function join_date_fields_to_str($posted, $ff, $us_fmt=false) 
+    {
+        if ($us_fmt) {
+            $fmt = 'm/d/Y';
+        }
+        else {
+            $fmt = 'Y-m-d';
+        }
+
+        if (!isset($posted[$ff . "_year"])) return;
+
+
+        if (isset($posted[$ff . "_day"])) {
+            $d = sprintf("%02d", $posted[$ff . "_day"]);
+        }
+        else {
+            $d = '01';
+        }
+
+        $y = intval( $posted[$ff . "_year"] );
+        $m = intval( $posted[$ff . "_month"] );
+
+        if (!checkdate($m, $d, $y)) { // throw up a little bit?
+            return;
+        }
+
+        $h = 0;
+        $min = 0;
+        $s = 0;
+
+        $has_time = (isset($posted[$ff . "_hours"]));
+
+        if ($has_time) {
+            $h = intval($posted[$ff . "_hours"]);
+            if (isset($posted[$ff . "_ampm"]) and $posted[$ff.'_ampm'] == 'PM') {
+                $h += 12;
+            }
+            $min = (isset($posted[$ff . "_min"]))? intval($posted[$ff . "_min"]) : 0;
+            $s = (isset($posted[$ff . "_sec"]))? intval($posted[$ff . "_sec"]) : 0;
+            $fmt .= ' H:i:s';
+        }
+
+        $time = mktime($h,$min,$s,$m,$d,$y);
+
+        return date($fmt, $time);
+
+    }
+
+
+
+
+
+
 
 }
 
-/**
- * @changelog
- * 1.4  Thu Jan 13 2005 
- *      - add set_elem_vals() method which was sorely needed
- *      - add $instance_token and logic to include a unique identifier with each invocation 
- *      - updated comments in this file for phpdocumentor style
- */
-
 // vim: set expandtab tabstop=4 shiftwidth=4 fdm=marker:
-?>
