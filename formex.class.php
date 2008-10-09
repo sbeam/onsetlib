@@ -849,6 +849,9 @@ class formex extends PEAR
         $fields["HIDDENS"] = '';
 
         if ($this->do_instance_token) {
+
+            if (empty($this->instance_token)) $this->instance_token = md5(uniqid(rand(), true));
+
             $this->add_element($this->form_instance_token_key, array('token', 'hidden'));
             $this->set_elem_value($this->form_instance_token_key, $this->instance_token);
         }
