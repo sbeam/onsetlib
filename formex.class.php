@@ -904,7 +904,7 @@ class formex extends PEAR
             if ($this->back_compat_uc_field_keys) {
                 foreach ($fields[$col] as $k => $v) {
                     $fields[$col][strtoupper($k)] = $v;
-                    unset($fields[$col][$k]);
+                    //unset($fields[$col][$k]);
                 }
             }
 
