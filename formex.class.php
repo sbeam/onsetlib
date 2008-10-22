@@ -1225,6 +1225,17 @@ class formex extends PEAR
                         }
                         break;
 
+                    case 'state_abbr': // if US or Canada based on "country", make sure is a 2-letter abbr.
+                        if (strlen($posted[$ff]) != 2) {
+                            if (empty($posted['country']) or $posted['country'] == 'US') {
+                                $ferr = "Please use your 2-letter state abbreviation";
+                            }
+                            elseif (!empty($posted['country']) and $posted['country'] == 'CA') {
+                                $ferr = "Please use your 2-letter Canadian province abbreviation";
+                            }
+                        }
+                        break;
+
                     case 'email':
                         if (!empty($posted[$ff]) && !self::is_proper_email($posted[$ff])) {
                             $ferr = "'%2\$s' is not a valid email address. Please enter a complete
