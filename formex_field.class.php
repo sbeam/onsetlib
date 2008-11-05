@@ -1104,6 +1104,7 @@ EOJS;
 
         $name = $this->fname;
         $path = '';
+        $max = (!empty($this->attribs['displaysize']))? $this->attribs['displaysize'] : 64;
 
         if (isset($this->attribs['ws_path'])) {
             $path = $this->attribs['ws_path'];
@@ -1112,39 +1113,35 @@ EOJS;
             $path = SITE_MEDIA_URLPATH;
         }
 
-        $res = "<div class=\"displayWrapper\" style=\"position: relative; margin: 0; padding: 0\">\n";
+        $res = '<div class="fieldImageW">';
 
         if (!empty($val)) {
-            if (is_array($val)) { // tis inside an expandable fieldset holy shit
-                $res .= "<a href=\"#\" onclick=\"autoDisplayToggle(event); return false;\">
-                            <img src=\"".$this->fex->icons_dir."image2.gif\" height=\"22\" width=\"20\" border=\"0\" /></a>
-                            <div style=\"position: absolute; left: 0px; top: 0px; display: none; z-index: 12\">";
-                $res .= sprintf("<a href=\"#\" onclick=\"autoDisplayToggle(event); return false;\"> 
-                                <img class=\"sampleImgExpander\" name=\"img_sample_$name\" src=\"%s/%s\" %s border=\"0\" /></a>\n ",
-                                 $path,
-                                 $val["${name}_orig"], 
-                                 $val["${name}_orig_dims"]);
-                $res .= sprintf('<input type="hidden" name="%s_orig" value="%s" />', $name, $val["${name}_orig"]);
-                $res .= sprintf('<input type="hidden" name="%s_orig_dims" value="%s" />', 
-                                 $name, 
-                                 $this->_htmlentities($val["${name}_orig_dims"]));
-            }
-            else { // tis just a wee little regular file field matey
                 $val = preg_replace('/^\//', '', $val); // rid of a pesky leading slash now
+                $url = "$path/" . urlencode($val);
+
                 if (preg_match('/\.swf$/', $val)) { // its a F'en Flash - just pop a new friggin windowz
-                    $res .= "<a href=\"$path/$val\" target=\"flashWin\">
-                                <img src=\"/gfx/icons/flash.gif\" height=\"25\" width=\"25\" border=\"0\"></a>";
+                    $res .= "<span class='ffimg'><a href=\"$url\" target=\"flashWin\"><img src=\"/gfx/icons/flash.gif\"></a></span>";
                 }
                 else {
-                    $res .= "<a href=\"#\" onclick=\"autoDisplayToggle('Wrap$name'); return false;\">
-                                <img src=\"".$this->fex->icons_dir."image2.gif\" height=\"22\" width=\"20\" border=\"0\" /></a>
-                        <div id=\"Wrap$name\" style=\"position: absolute; left: 0px; top: 0px; display: none; z-index: 12\">
-                        <a href=\"#\" onclick=\"autoDisplayToggle('Wrap$name'); return false;\">";
-                    $res .= "
-                          <img src=\"$path/$val\" border=\"0\" /></a>";
+                    $size = '';
+                    $tw = $max;
+                    $th = $max;
+                    if (list($w, $h) = @getimagesize(UPLOAD_SAVE_PATH . '/' . $val)) {
+                        if ($w > $h) {
+                            $th = floor($h * ($tw / $w));
+                        }
+                        else {
+                            $tw = floor($w * ($th / $h));
+                        }
+                        $size = sprintf(" [%dx%d]", $w, $h);
+                    }
+                    $res .= sprintf('<img src="%s" width="%d" height="%d" title="%s%s">', 
+                                     $url, 
+                                     $tw,
+                                     $th,
+                                     htmlspecialchars($val),
+                                     $size);
                 }
-            }
-            $res .= "</div>";
         }
 
         $res .= $this->_field_file($val);
