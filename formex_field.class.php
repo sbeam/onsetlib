@@ -1009,12 +1009,11 @@ class formex_field
         return $res;
     }
 
-    /*!
-    \private
-    sets up some DIVs, IMFRAMEs and JavaScript tags to create the x-browser Rich Text Editor,
-    http://www.kevinroth.com/rte/demo.htm
-    a textarea replacement. Most of the HTML is written using document.write() in richTextEditor.js -
-    this file must be located where $this->js_src_dir says it is!
+    /**
+     * creates a textarea element but with a className that should trigger the 
+     * attachment of tinymce which will kick ass and turn it into a RTE editor 
+     * @params $fval default value
+     * @return string
     */
     function _field_richTextEditor($fval) 
     {
@@ -1094,13 +1093,13 @@ EOJS;
 
 
 
-    /*!
-    \private
-    shows a file upload field, but if $val is set shows an icon for the image itself.
-    When the icon is clicked it should display the actual image file that is the current value of this field
+    /**
+     * shows a input:file element, and if $val is set show an icon for the 
+     * image itself, which is scaled down but hopefully proportionately
+     * @params $fval default value
+     * @return string
     */
-    function _field_image_upload ($val) 
-    {
+    function _field_image_upload ($val) {
 
         $name = $this->fname;
         $path = '';
@@ -1147,6 +1146,15 @@ EOJS;
         $res .= $this->_field_file($val);
         $res .= "</div>";
         return $res;
+    }
+
+    /**
+     * show a simple text element but with a class that will allow attachment 
+     * of mcfilemanager plugin to bring up the medialibrary app onclicky */
+    function _field_medialib($fval) {
+        $class = (!empty($this->attribs['class']))? $this->attribs['class'] : '';
+        $this->attribs['class'] = $class + ' medialib';
+        return $this->_field_text($fval);
     }
 
    

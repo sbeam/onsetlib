@@ -55,6 +55,26 @@
     height: 1.8em;
 }
 
+.formexFieldMedialib input {
+    border: 1px solid #555;
+    color: #555;
+    width: 20em;
+    margin: 1px;
+    padding: 3px;
+    background: #e0e0e0;
+}
+.formexFieldMedialib a {
+    float: right;
+    width: 16px;
+    height: 16px;
+    background-image: url(images/media_library.gif);
+    text-indent: 40px;
+    overflow: hidden;
+    margin: 3px;
+}
+.formexFieldMedialib a span {
+    display: none;
+}
 
 #TB_overlay {
 	position: fixed;
