@@ -332,7 +332,7 @@ class formex_field
         return sprintf("<textarea %s rows=\"%d\" cols=\"%d\" name=\"%s\" id=\"%s\" class=\"%s\" %s>%s</textarea>",
                         ($this->fex->strict_xhtml_mode)? '' : 'wrap="'.$this->attribs['wrap'].'"',
                         $this->attribs['rows'],
-                        $this->max_size,
+                        (!empty($this->attribs['cols']))? $this->attribs['cols'] : $this->max_size,
                         $this->fname,
                         $this->fname,
                         (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
