@@ -26,7 +26,11 @@ tinyMCE.init({
     convert_fonts_to_spans : true,
     relative_urls : false,
     remove_script_host : true,
-    convert_urls : false
+    convert_urls : false,
+
+    forced_root_block : false,
+      //force_br_newlines : false,
+      //force_p_newlines : false
 });
 
 
