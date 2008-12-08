@@ -182,6 +182,14 @@ class db_container extends PEAR {
     }
 
 
+    /** get the number of rows matched by the last fetch_any() type of query
+     * @return int or null if no such query has been made
+     */
+    function get_numrows() {
+        return (isset($this->numRows))? $this->numRows : null;
+    }
+
+
     /**
      * get a copy of the colmap
      * @return array the colmap 
