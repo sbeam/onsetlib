@@ -201,6 +201,26 @@ class imagestretcher extends PEAR {
 
 
 
+    /**
+     * wrapper to call the proper image processing method, because the original 
+     * function names are rather confusing.
+     *
+     * @param $w int width
+     * @param $h int height
+     * @param $method str one of 'crop' or 'shrink'
+     * @return bool/PE
+    */
+    function resize($w, $h, $method='shrink') {
+        if ($method == 'crop') {
+            return $this->shrink_to_size($w, $h);
+        }
+        elseif ($method == 'shrink') {
+            return $this->shrink_to_fit($w, $h);
+        }
+        else {
+            trigger_error("unknown imagestretcher() method: $method", E_USER_WARNING);
+        }
+    }
 
     /**
      * create a new smaller image with the specific given dimensions. Image
