@@ -297,7 +297,8 @@ class mosh_tool extends PEAR
 
             // special case for checkboxes which may or may not exist, and need to be 0/1 either way
             if ($map[$k][1] == 'toggle' or $map[$k][1] == 'checkbox') { 
-                $vals[$k] = isset($this->posted_vars[$this->form_field_prefix . $k]);
+                $val = (!empty($map[$k][2]) && is_array($map[$k][2]))? $map[$k][2] : array(0, 1);
+                $vals[$k] = (isset($this->posted_vars[$this->form_field_prefix . $k]))? $val[1] : $val[0];
             }
             elseif ($map[$k][1] == 'calendar') {
                 $vals[$k] = date('Y-m-d H:i:s', strtotime($this->posted_vars[$this->form_field_prefix . $k]));

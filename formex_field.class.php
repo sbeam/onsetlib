@@ -504,12 +504,29 @@ class formex_field
          $pick_label = (isset($this->attribs['pick_button_label']))? $this->attribs[ 'pick_button_label']:'&lt;&lt;';
          $drop_label = (isset($this->attribs['drop_button_label']))? $this->attribs[ 'drop_button_label']:'&gt;&gt;';
 
+         /* $fval should be a linear list of keys that are currently selected. 
+          * We pull the values from $opts if any are found and make sure they 
+          * are listed in the 'picks' select */
+         $vals = array();
+         if (!empty($fval) && is_array($fval)) {
+             foreach ($fval as $k) {
+                 if (isset($opts[$k])) {
+                     $vals[$k] = $opts[$k];
+                 }
+             }
+         }
+
+         /* create the 2 select boxes */
+         $picks = new formex_field($this->fex, $this->name, array('Picks', 'select_multiple', $vals, $this->attribs));
          $pool = new formex_field($this->fex, $this->name.'_pool', array('Pool', 'select_multiple', $opts, $this->attribs));
+
+         /* and two buttons */
          $op_pick = new formex_field($this->fex, $this->name.'_op_pick', array($pick_label, 'button', null, null, 'onclick="formexFieldBicameralSelect(\''.$this->name. '\', 1)"', 0));
          $op_drop = new formex_field($this->fex, $this->name.'_op_drop', array($drop_label, 'button', null, null, 'onclick="formexFieldBicameralSelect(\''.$this->name. '\', 0)"', 0));
 
+         /* and a small table to wrap it all up */
          $res = "<table border=\"0\"><tr><td valign=\"top\">";
-         $res .= $this->_field_select_multiple($fval);
+         $res .= $picks->get_html(null);
          $res .= "</td><td align=\"center\" valign=\"middle\">";
          $res .= $op_pick->get_html(null);
          $res .= $op_drop->get_html(null);
@@ -564,12 +581,14 @@ class formex_field
     */
     function _field_toggle($fval) 
     {
+        $has_check = (!empty($fval) && ($fval == $this->opts || (is_array($this->opts) && $fval == $this->opts[1])) && $fval != '0000-00-00');
+
         return sprintf("<input type=\"checkbox\" name=\"%s\" id=\"%s\" %s class=\"%s\" %s %s />&nbsp;<span class=\"%s\">%s</span>",
                         $this->fname,
                         $this->fname,
                         ($this->opts)? 'value="' . $this->opts . '"' : '',
                         (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
-                        (!empty($fval) && $fval != '0000-00-00')? "checked" : "",
+                        ($has_check)? "checked" : "",
                         $this->extra_attribs,
                         (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
                         (isset($this->attribs['after_text']))? $this->attribs['after_text'] : '(Check for yes)' 
@@ -1153,7 +1172,7 @@ EOJS;
      * of mcfilemanager plugin to bring up the medialibrary app onclicky */
     function _field_medialib($fval) {
         $class = (!empty($this->attribs['class']))? $this->attribs['class'] : '';
-        $this->attribs['class'] = $class + ' medialib';
+        $this->attribs['class'] = $class . ' medialib';
         return $this->_field_text($fval);
     }
 

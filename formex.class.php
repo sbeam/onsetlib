@@ -1295,7 +1295,18 @@ class formex extends PEAR
                 // special case for checkboxes which may or may not exist, and need to be 0/1 either way
                 case 'toggle':
                 case 'checkbox':
-                    $vals[$k] = isset($posted[$ff]);
+
+                    $val = null;
+
+                    if (!empty($this->_elems[$k]->opts)) {
+                        $opt = $this->_elems[$k]->opts;
+                        if (is_array($opt))
+                            $val = $opt;
+                        elseif (is_string($opt)) // bc
+                            $val = array(false, $opt);
+                    }
+                    if (!$val) $val = array(0, 1);
+                    $vals[$k] = (isset($posted[$ff]))? $val[1] : $val[0];
                     break;
 
                 case 'calendar':
