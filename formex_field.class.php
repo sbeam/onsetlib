@@ -581,7 +581,8 @@ class formex_field
     */
     function _field_toggle($fval) 
     {
-        $has_check = (!empty($fval) && ($fval == $this->opts || (is_array($this->opts) && $fval == $this->opts[1])) && $fval != '0000-00-00');
+        // most of this is to avoid E_NOTICEs
+        $has_check = (!empty($fval) && ($fval == $this->opts || (is_array($this->opts) && isset($this->opts[1]) && $fval == $this->opts[1])) && $fval != '0000-00-00');
 
         return sprintf("<input type=\"checkbox\" name=\"%s\" id=\"%s\" %s class=\"%s\" %s %s />&nbsp;<span class=\"%s\">%s</span>",
                         $this->fname,
