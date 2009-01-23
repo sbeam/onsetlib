@@ -535,9 +535,12 @@ class db_container extends PEAR {
      */
     function _get_fetch_any_sql($cols, $orderby, $where, $orderdir) {
 
-        $sql = sprintf("SELECT %s FROM %s",
-                                ($cols)? join(',', $cols) : '*',
-                                $this->get_table_name());
+        if (empty($cols))
+            $cols = '*';
+        elseif (is_array($cols))
+            $cols = join(',', $cols);
+
+        $sql = sprintf("SELECT %s FROM %s", $cols, $this->get_table_name());
         if ($where) $sql .= "\nWHERE $where";
         if ($orderby) {
             $sql .= "\nORDER BY $orderby $orderdir";
