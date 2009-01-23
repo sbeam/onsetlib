@@ -950,6 +950,12 @@ class formex extends PEAR
                 elseif (isset($elem->attribs["maxdims"])) { 
                     $elem->descrip .= "<br>(" . $elem->attribs["maxdims"] . " max)";
                 }
+                elseif (isset($elem->attribs["resize_method"]) && isset($elem->attribs["dims"])) { 
+                    $elem->descrip .= sprintf("<br>(%s to %s)", $elem->attribs["resize_method"], $elem->attribs["dims"]);
+                }
+                if (isset($elem->attribs["thumb_method"]) && isset($elem->attribs["thumb_dims"])) { 
+                    $elem->descrip .= sprintf("<br>thumb:(%s to %s)", $elem->attribs["thumb_method"], $elem->attribs["thumb_dims"]);
+                }
             }
             
             // check for submits - they get special colspan=2 treatment in the table row
