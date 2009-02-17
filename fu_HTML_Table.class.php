@@ -15,16 +15,23 @@ class fu_HTML_Table extends HTML_Table {
     var $invertSort = true;
 
     // same as addRow() but adds my special params and auto-calculates bgcolor
-    function addRow_fu (&$contents, $special_class="", $hilite = true, $click_go=null) {
+    function addRow_fu (&$contents, $special_class="", $hilite = true, $click_go=null, $use_rel_link=false) {
         $attrs = array("valign" => "middle",
-                       "style" => "background-color: " . $this->bgcolor_alts[$this->bg_itr],
                        "class"=> ($special_class)? $special_class : $this->td_class);
         if ($hilite) {
-            $attrs['onmouseover'] = "if (document.all) { this.style.saveBG = this.style.backgroundColor; this.style.backgroundColor = '{$this->bgcolor_hilite}' }";
-            $attrs['onmouseout'] = "if (document.all) this.style.backgroundColor = this.style.saveBG";
+            $attrs['onmouseover'] = "this.style.saveBG = this.style.backgroundColor; this.style.backgroundColor = '{$this->bgcolor_hilite}'";
+            $attrs['onmouseout'] = "this.style.backgroundColor = this.style.saveBG";
         }
         if ($click_go) {
-            $attrs['onclick'] = "document.location = '" . $click_go . "'";
+            if ($use_rel_link) {
+                $attrs['rel'] = $click_go;
+            }
+            else {
+                $attrs['onclick'] = "document.location = '" . $click_go . "'"; // Bc
+            }
+        }
+        if (!empty($this->bgcolor_alts)) {
+            $attrs["style"] = "background-color: " . $this->bgcolor_alts[$this->bg_itr];
         }
 
         $this->addRow($contents, $attrs, 'TD', true);
@@ -38,7 +45,7 @@ class fu_HTML_Table extends HTML_Table {
     }
 
     // add a row for sorting, with all kinds of magic links
-    function addSortRow (&$colmap, $col_ordered = null, $attribs = null, $type='TD', $extra_get_vars=null, $order_dir='A') {
+    function addSortRow (&$colmap, $col_ordered = null, $attribs = null, $type='TH', $extra_get_vars=null, $order_dir='A') {
         
         $cells = array();
         foreach ($colmap as $col => $label) {
