@@ -1356,10 +1356,11 @@ class formex extends PEAR
      * @static
      * @public
     */
-    static public function is_proper_date($date, $format) 
+    static public function is_proper_date($date, $format=null) 
     {
         if (!is_array($date)) { // check string format
-            if (!preg_match(self::date_format, $date, $m)) return;
+            $fmt = ($format)? $format : self::date_format;
+            if (!preg_match($fmt, $date, $m)) return;
             list($y,$m,$d) = array($m[1],$m[2],$m[3]);
         }
         else {

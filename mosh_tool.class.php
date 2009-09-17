@@ -468,11 +468,11 @@ class mosh_tool extends PEAR
             if (is_array($v)) {  // it needs the magic brackets
                 reset($v);
                 foreach ($v as $val) {
-                    $elems[] = $this->urlencode($k . "[]") . '=' . $this->urlencode($val);
+                    $elems[] = self::urlencode($k . "[]") . '=' . self::urlencode($val);
                 }
             }
             else {
-                $elems[] = $this->urlencode($k) . '=' . $this->urlencode($v);
+                $elems[] = self::urlencode($k) . '=' . self::urlencode($v);
             }
         }
         if (count($elems)) {
