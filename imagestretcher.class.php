@@ -267,6 +267,8 @@ class imagestretcher extends PEAR {
                return $this->raiseError("could not create a new thumbnail image ($tw, $th)!");
            }
 
+           $this->_preallocate_transparency($tw, $th);
+           //
            //resize and copy image
            if (!imagecopyresampled($this->new_img, $this->source_img, 0,0,$offset_x,$offset_y,$tw,$th,$side,$side)) {
                return $this->raiseError("could not copy resized image");
@@ -280,6 +282,31 @@ class imagestretcher extends PEAR {
 
 
 
+    /**
+     * usually when people use PNGs, it's because they need alpha channel 
+     * support (that means transparency kids). So here we jump through some 
+     * hoops to create a big transparent rectangle which the resampled image 
+     * will be copied on top of. This will prevent GD from using its default 
+     * background, which is black, and almost never correct. Why GD doesn't do 
+     * this automatically, is a good question.
+     *
+     * http://stackoverflow.com/questions/279236/how-do-i-resize-pngs-with-transparency-in-php/1655575
+     *
+     * @param $w int width of target image
+     * @param $h int height of target image
+     * @return void
+     * @private
+     */
+    function _preallocate_transparency($w, $h) {
+        if (!empty($this->filetype) && !empty($this->new_img) && $this->filetype == 'image/png') {
+            if (function_exists('imagecolorallocatealpha')) {
+                imagealphablending($this->new_img, false);
+                imagesavealpha($this->new_img, true);
+                $transparent = imagecolorallocatealpha($this->new_img, 255, 255, 255, 127);
+                imagefilledrectangle($this->new_img, 0, 0, $tw, $th, $transparent);
+            }
+        }
+    }
 
 
 
@@ -322,6 +349,8 @@ class imagestretcher extends PEAR {
            if (!$this->new_img = imagecreatetruecolor($new_w, $new_h)) {
                return $this->raiseError("could not create a new thumbnail image ($new_w, $new_h)!");
            }
+
+           $this->_preallocate_transparency($tw, $th);
 
            //resize and copy image
            if (!imagecopyresampled($this->new_img, $this->source_img, 0,0,0,0, $new_w, $new_h, $w, $h)) {
@@ -367,7 +396,8 @@ class imagestretcher extends PEAR {
        if (!$got) { // limitless power!!
 			return true;
        }
-       $need = round(($gis[0] * $gis[1] * $gis['bits'] * $gis['channels'] / 8 + pow(2, 16)) * 1.65);
+       $channels = (isset($gis['channels']))? $gis['channels'] : 4; // assume the worst 
+       $need = round(($gis[0] * $gis[1] * $gis['bits'] * $channels / 8 + pow(2, 16)) * 1.65);
        if (preg_match('/(\d+)M$/', $got, $m)) {
            $got = 1024*1024*$m[1];
        }
