@@ -1202,7 +1202,8 @@ class formex extends PEAR
                                             ); 
 
                         if (!self::is_proper_date($datefields)) {
-                            $ferr = "'%s' is not a valid date.";
+                            $ferr = "'%s' is not a valid date. "; 
+                            $posted[$ff] = join('/', $datefields); // to avoid a notice only
                         }
                         break;
 
