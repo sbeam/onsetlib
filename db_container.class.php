@@ -324,29 +324,33 @@ class db_container extends PEAR {
             }
         }
 
-        /* its an update if $this->_pk_col is in the $vals already or $force_insert */
-        if (isset($this->_id) and !$force_insert) {
-            if (!is_array($this->_pk_col)) { /* normal one-col pk */
-                $sql_where = sprintf("%s = '%s'", $this->_pk_col, $this->get_id());
-            }
-            else { /* pk is multicol! */
-                foreach ($this->_pk_col as $col) {
-                    $wheres[] = sprintf("%s = '%s'", $col, $this->_id[$col]);
-                    $sql_where = join(' AND ', $wheres);
+        $res = false;
+        if (!empty($vals)) {
+            /* its an update if $this->_pk_col is in the $vals already or $force_insert */
+            if (isset($this->_id) and !$force_insert) {
+                if (!is_array($this->_pk_col)) { /* normal one-col pk */
+                    $sql_where = sprintf("%s = '%s'", $this->_pk_col, $this->get_id());
                 }
-            }
-            $res = $this->db->autoExecute($this->get_table_name(), $vals, DB_AUTOQUERY_UPDATE, $sql_where);
-        }
-        else { /* insert to be done */
-            if (!is_array($this->_pk_col)) {
-                if (!isset($vals[$this->_pk_col])) { // create new id
-                    $seq_name = (!empty($this->_id_sequence))? $this->_id_sequence : $this->get_table_name();
-                    $vals[$this->_pk_col] = $this->db->nextId($seq_name);
+                else { /* pk is multicol! */
+                    foreach ($this->_pk_col as $col) {
+                        $wheres[] = sprintf("%s = '%s'", $col, $this->_id[$col]);
+                        $sql_where = join(' AND ', $wheres);
+                    }
                 }
-                $this->set_id($vals[$this->_pk_col]); // note frm here on out, This->_id
+                $res = $this->db->autoExecute($this->get_table_name(), $vals, DB_AUTOQUERY_UPDATE, $sql_where);
             }
-            $res = $this->db->autoExecute($this->get_table_name(), $vals, DB_AUTOQUERY_INSERT);
+            else { /* insert to be done */
+                if (!is_array($this->_pk_col)) {
+                    if (!isset($vals[$this->_pk_col])) { // create new id
+                        $seq_name = (!empty($this->_id_sequence))? $this->_id_sequence : $this->get_table_name();
+                        $vals[$this->_pk_col] = $this->db->nextId($seq_name);
+                    }
+                    $this->set_id($vals[$this->_pk_col]); // note frm here on out, This->_id
+                }
+                $res = $this->db->autoExecute($this->get_table_name(), $vals, DB_AUTOQUERY_INSERT);
+            }
         }
+
         if (PEAR::isError($res)) {
             return $res;
         }
@@ -356,13 +360,14 @@ class db_container extends PEAR {
             $effect = $this->db->affectedRows();
 
             /* perhaps have dependent tables and values to add to them? */
+            $kid_res = false;
             if (count($kids)) {
                 foreach ($kids as $k => $kidvals) {
-                    $res = $this->_store_related_kids($k, $kidvals);
+                    $kid_res = $this->_store_related_kids($k, $kidvals);
                 }
             }
 
-            if ($effect != 1) { // inconveniently, this is fatal TODO exceptions
+            if ($effect != 1 and !$kid_res) { // inconveniently, this is fatal TODO exceptions
                 return $this->raiseError("warning: $effect rows were changed", DBCON_ZERO_EFFECT, PEAR_ERROR_RETURN);
             }
             else {
