@@ -15,7 +15,7 @@ class fu_HTML_Table extends HTML_Table {
     var $invertSort = true;
 
     // same as addRow() but adds my special params and auto-calculates bgcolor
-    function addRow_fu (&$contents, $special_class="", $hilite = true, $click_go=null, $use_rel_link=false) {
+    function addRow(&$contents, $special_class="", $hilite = true, $click_go=null, $use_rel_link=false) {
         $attrs = array("valign" => "middle",
                        "class"=> ($special_class)? $special_class : $this->td_class);
         if ($hilite) {
@@ -23,25 +23,20 @@ class fu_HTML_Table extends HTML_Table {
             $attrs['onmouseout'] = "this.style.backgroundColor = this.style.saveBG";
         }
         if ($click_go) {
-            if ($use_rel_link) {
+            if ($use_rel_link)
                 $attrs['rel'] = $click_go;
-            }
-            else {
+            else 
                 $attrs['onclick'] = "document.location = '" . $click_go . "'"; // Bc
-            }
         }
-        if (!empty($this->bgcolor_alts)) {
+        if (!empty($this->bgcolor_alts))
             $attrs["style"] = "background-color: " . $this->bgcolor_alts[$this->bg_itr];
-        }
 
-        $this->addRow($contents, $attrs, 'TD', true);
-
-        if ($this->bg_itr >= count($this->bgcolor_alts) - 1) {
+        if ($this->bg_itr >= count($this->bgcolor_alts) - 1)
             $this->bg_itr = 0;
-        }
-        else {
+        else
             $this->bg_itr++;
-        }
+
+        parent::addRow($contents, $attrs, 'TD', true);
     }
 
     // add a row for sorting, with all kinds of magic links
@@ -73,7 +68,7 @@ class fu_HTML_Table extends HTML_Table {
         }
         if (!isset($attribs["class"])) $attribs["class"] = $this->th_class;
 
-        $this->addRow($cells, $attribs, $type);
+        parent::addRow($cells, $attribs, $type);
     }
 
     function _invertDir($dir) {
