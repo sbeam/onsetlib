@@ -170,7 +170,6 @@ define ('FORMEX_FIELD_REQUIRED', 1); // no error, but field is required
 define ('FORMEX_FIELD_ERROR', 2); // field was required, there has been an error
 
 require_once('formex_field.class.php');
-require_once('formex_tag.smarty.php');
 
 /**
  *  formex() - form controller class
@@ -1232,13 +1231,15 @@ class formex extends PEAR
                         }
                         break;
 
-                    case 'state_abbr': // if US or Canada based on "country", make sure is a 2-letter abbr.
-                        if (strlen($posted[$ff]) != 2) {
-                            if (empty($posted['country']) or $posted['country'] == 'US') {
-                                $ferr = "Please use your 2-letter state abbreviation";
+                    case 'state_abbr': // if US or Canada based on "country", or there no "country", make sure is a 2-letter abbr.
+                        if (empty($posted['country']) or $posted['country'] == 'US') {
+                            if (strlen($posted[$ff]) != 2 or !formex_field::get_states_opts(true, $posted[$ff])) {
+                                $ferr = "Please use a valid 2-letter state abbreviation";
                             }
-                            elseif (!empty($posted['country']) and $posted['country'] == 'CA') {
-                                $ferr = "Please use your 2-letter Canadian province abbreviation";
+                        }
+                        elseif (!empty($posted['country']) and $posted['country'] == 'CA') {
+                            if (strlen($posted[$ff]) != 2 or !formex_field::get_canadian_provs(true, $posted[$ff])) {
+                                $ferr = "Please use a valid 2-letter Canadian province abbreviation";
                             }
                         }
                         break;
@@ -1260,7 +1261,7 @@ class formex extends PEAR
 
                 if ($ferr) {
                     $this->_elems[$k]->set_error();
-                    $errs[] = sprintf($ferr, $this->_elems[$k]->descrip, $posted[$ff]);
+                    $errs[$k] = sprintf($ferr, $this->_elems[$k]->descrip, $posted[$ff]);
                 }
             }
         }
