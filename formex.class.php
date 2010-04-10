@@ -1189,11 +1189,12 @@ class formex extends PEAR
                 $ff = $this->field_prefix . $k;  //shorthand
                 $ferr = null;
 
+                $attribs = $this->_elems[$k]->attribs;
                 switch ($this->_elems[$k]->type) {
 
                     case 'date':
                     case 'date_us':
-                        $day = (!empty($this->_elems[$k]->attribs['suppress_day']))? '01' : sprintf("%d", $posted[$ff . "_day"]);
+                        $day = (!empty($attribs['suppress_day']))? '01' : sprintf("%d", $posted[$ff . "_day"]);
 
                         $datefields = array(sprintf("%d", $posted[$ff . "_month"]),
                                             $day,
@@ -1202,8 +1203,16 @@ class formex extends PEAR
 
                         if (!self::is_proper_date($datefields)) {
                             $ferr = "'%s' is not a valid date. "; 
-                            $posted[$ff] = join('/', $datefields); // to avoid a notice only
                         }
+                        elseif (!empty($attribs['date_min']) or !empty($attribs['date_max'])) {
+                            if (! ($date = strtotime(join('/', $datefields)))) 
+                                $ferr = "'%s' is not a valid date. "; 
+                            elseif (!empty($attribs['date_min']) and $date < strtotime($attribs['date_min'])) 
+                                $ferr = sprintf("Date must be greater than '%s'", $attribs['date_min']);
+                            elseif (!empty($attribs['date_max']) and $date > strtotime($attribs['date_max'])) 
+                                $ferr = sprintf("Date must be before '%s'", $attribs['date_max']);
+                        }
+                        $posted[$ff] = join('/', $datefields); // to avoid a notice only
                         break;
 
                     case 'date_text':
@@ -1420,10 +1429,10 @@ class formex extends PEAR
 
 
         if (isset($posted[$ff . "_day"])) {
-            $d = sprintf("%02d", $posted[$ff . "_day"]);
+            $d = intval($posted[$ff . "_day"]);
         }
         else {
-            $d = '01';
+            $d = 1;
         }
 
         $y = intval( $posted[$ff . "_year"] );
@@ -1449,10 +1458,18 @@ class formex extends PEAR
             $fmt .= ' H:i:s';
         }
 
+        if (version_compare(PHP_VERSION, '5.1.0', '<')) {
+            if ($y < 100) $y += 1900;
+            if ($y < 1903) return; // php5.1 mktime() doesn't work w dates <1903
+        }
+
         $time = mktime($h,$min,$s,$m,$d,$y);
+        if ($time === false or $time === -1) {
+            trigger_error("Invalid args to mktime(): $h,$min,$s,$m,$d,$y", E_USER_WARNING);
+            return;
+        }
 
         return date($fmt, $time);
-
     }
 
 
