@@ -37,11 +37,6 @@
  *    add form elements as needed, and finally call display() which will assemble
  *    the HTML and return the string.
  * 
- *    formex does not have anything to do with validation, client- or
- *    server-side - that is left to subclasses or data processing classes.
- *    What it will do, is allow you to designate fields with errors which will
- *    be marked up in ways that make it easy to designate for the user.
- *
  *    By default, the output of the final display() method is a two-column XHTML
  *    table. Field labels are in the left column and the elements are on right.
  *    Hidden fields are tacked on at the end, and the submit button right-aligned
@@ -146,7 +141,41 @@
  *    The class formex_field provides the numerous handler methods for the various
  *    field types. Each element is cast as a member object of the formex_field class.
  *
+ *    VALIDATION BUILT-INS
+ *    validate() will check each of the submitted values against the definitions
+ *    for that form elements, and return an array listing any errors found, as a list of strings.
+ *
+ *    In add_element(), the fifth argument is a boolean. If true, the field will be checked
+ *    by type against the pre-built-in validators for that element type. See validate() for supported
+ *    types and other arguments/
+ *
+ *    VALIDATION CALLBACKS
+ *    If you need to write custom validation for certain elements, this can always be done
+ *    before you call get_submitted_vals(). Or, you can inform formex() of the existence of 
+ *    a validation function - and it will call it for you in validate().
+ *
+ *    So, any form element created with the attribute 'validate' can be automatically passed
+ *    to the given validation function for checking. The value of 'validate' should be
+ *    a function or static method as callable by PHP's <call_user_func()>. This function
+ *    will be passed 2 arguments, the fieldname and the submitted value. It
+ *    should return a string describing the error, if it fails.
+ *
+ *       $fex->add_element('zipcode', array('ZIP', 'text', null, array('validate' => array('someClass', 'validate_zipcode')), false);
+ *       ....
+ *       class someClass {
+ *         static function validate_zipcode($field, $value) {
+ *             if (!empty($value)) {
+ *                 if (!preg_match('/^[0-9]{5}$/', $value)) 
+ *                     return "Enter a 5-digit US ZIP code";
+ *                 elseif (!check_against_real_zipcode_DB($value)) 
+ *                     return "Enter a valid US ZIP code";
+ *             }
+ *         }
+ *       }
+ *
  * @changelog
+ * 2.1 Apr 2010
+ *      - add validation callbacks
  * 2.0 Thu Sep 25 2008
  *      - remove all interdependency with mosh_tool, and bring in the validation() 
  *      and get_submitted_vals() code from that with claneup to do the job. 
@@ -1169,7 +1198,7 @@ class formex extends PEAR
 
 
     /**
-     * use mosh_tool to check $posted against the current instance's colmap versi on for validity
+     * check $posted against the current instance's colmap versi on for validity
      * @param $posted array the values to be checked (usually $_POST or $_GET)
      * @return false if passed, otherwise an list of error messages
      */
@@ -1184,12 +1213,12 @@ class formex extends PEAR
 
         foreach (array_keys($this->_elems) as $k) {
 
+            $ferr = null;
+            $ff = $this->field_prefix . $k;  //shorthand
+            $attribs = $this->_elems[$k]->attribs;
+
             if ($this->_elems[$k]->error_state === FORMEX_FIELD_REQUIRED) {
 
-                $ff = $this->field_prefix . $k;  //shorthand
-                $ferr = null;
-
-                $attribs = $this->_elems[$k]->attribs;
                 switch ($this->_elems[$k]->type) {
 
                     case 'date':
@@ -1258,6 +1287,7 @@ class formex extends PEAR
                             $ferr = "'%2\$s' is not a valid email address. Please enter a complete
                                         email address, i.e. 'jdoe@example.com', in the '%1\$s' field.";
                         }
+                        break;
 
                     default:
                         if (isset($posted[$ff]) && is_array($posted[$ff]) && 0 == count($posted[$ff])) {
@@ -1267,11 +1297,17 @@ class formex extends PEAR
                             $ferr = "'%s' is a required field.";
                         }
                 }
+            }
 
-                if ($ferr) {
-                    $this->_elems[$k]->set_error();
-                    $errs[$k] = sprintf($ferr, $this->_elems[$k]->descrip, $posted[$ff]);
-                }
+            /* attrib 'validate' in any field can point to a function or method that should return a error message on error */
+            if (empty($ferr) and isset($attribs['validate']) and is_callable($attribs['validate'])) {
+                $val = (!empty($posted[$ff]))? $posted[$ff] : null;
+                $ferr = call_user_func($attribs['validate'], $ff, $val);
+            }
+
+            if ($ferr) {
+                $this->_elems[$k]->set_error();
+                $errs[$k] = sprintf($ferr, $this->_elems[$k]->descrip, $posted[$ff]);
             }
         }
         if (count($errs) > 0) {
