@@ -416,6 +416,11 @@ class formex extends PEAR
     /** use only XHTML? */
     var $strict_xhtml_mode = true;
 
+    /**
+     * if true, incoming values in get_submitted_vals() will be converted to NULL if empty($val) 
+     */
+    var $convert_empty_string_to_null = false;
+
 
    /**
     * sets up the posted_vars array and sets the form action to $PHP_SELF to
@@ -1380,6 +1385,9 @@ class formex extends PEAR
                     }
             }
 
+            if ($this->convert_empty_string_to_null && isset($vals[$k]) && empty($vals[$k])) {
+                $vals[$k] = null;
+            }
         }
         return $vals;
 
