@@ -15,7 +15,7 @@ class fu_HTML_Table extends HTML_Table {
     var $invertSort = true;
 
     // same as addRow() but adds my special params and auto-calculates bgcolor
-    function addRow(&$contents, $special_class="", $hilite = true, $click_go=null, $use_rel_link=false) {
+    function addRow($contents, $special_class="", $hilite = true, $click_go=null, $use_rel_link=false) {
         $attrs = array("valign" => "middle",
                        "class"=> ($special_class)? $special_class : $this->td_class);
         if ($hilite) {
@@ -40,7 +40,7 @@ class fu_HTML_Table extends HTML_Table {
     }
 
     // add a row for sorting, with all kinds of magic links
-    function addSortRow (&$colmap, $col_ordered = null, $attribs = null, $type='TH', $extra_get_vars=null, $order_dir='A') {
+    function addSortRow ($colmap, $col_ordered = null, $attribs = null, $type='TH', $extra_get_vars=null, $order_dir='A') {
         
         $cells = array();
         foreach ($colmap as $col => $label) {
