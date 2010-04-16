@@ -193,10 +193,10 @@ class res_pager {
         // Build pages array
         for ($i=1; $i <= $numpages; $i++) {
             if (isset($this->page1_range)) {
-                $this->pages[$i-1] = $this->range * ($i-2);
+                $this->pages[$i] = $this->range * ($i-2);
             }
             else {
-                $this->pages[$i-1] = $this->range * ($i-1);
+                $this->pages[$i] = $this->range * ($i-1);
             }
 
             // $this->offset must point to one page
@@ -236,21 +236,25 @@ class res_pager {
 
         // truncate the list of pages to a range of max_pagecount around current
         if (!empty($this->max_pagecount) && $numpages > $this->max_pagecount) {
-            $a = $this->current - intval($this->max_pagecount/2); // current - half the max, or zero
-            $this->start_page = ($a < 0)? 0 : $a;
+            $lowerpage = $this->current - floor($this->max_pagecount/2); // current - half the max, or zero
+            $this->start_page = ($lowerpage < 0)? 1 : $lowerpage;
 
-            $a = $this->current + ceil($this->max_pagecount/2); // current + half the max, or the end
-            if ($a >= $numpages) {
+            $upperpage = $this->current + floor($this->max_pagecount/2); // current + half the max, or the end
+            if ($upperpage >= $numpages) {
                 $this->start_page = $numpages - $this->max_pagecount; // adjust the beginning
-                $this->end_page = 0;
+                $this->end_page = $numpages;
             }
             else {
-                $this->end_page = $a+1;
+                $this->end_page = $upperpage+1;
             }
+            if ($this->start_page > 1)
+                $this->pages = array_slice($this->pages, $this->start_page-1, null, true);
+            if ($this->end_page < $numpages) 
+                $this->pages = array_slice($this->pages, 0, $this->max_pagecount, true);
         }
         else { // no limits
-            $this->start_page = 0;
-            $this->end_page = 0;
+            $this->start_page = 1;
+            $this->end_page = $numpages;
             $this->max_pagecount = $numpages+1;
         }
 
@@ -276,7 +280,7 @@ class res_pager {
      * @param str prefix to be added to all GET keys (ie 'f_')
      * @return the new GET param string
      */
-    function make_get_params(&$arr, $ignore=array(), $prefix = '')
+    function make_get_params($arr, $ignore=array(), $prefix = '')
     {
         $elems = array();
         reset($arr);
