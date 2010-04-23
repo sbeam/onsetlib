@@ -57,9 +57,9 @@ class SphinxSearchTool {
             $indexes = '--all';
 
         $cmd = sprintf('%s/indexer --config %s %s',
-                        SPHINX_BINARY_DIR,
-                        SPHINX_CONFIG_FILE,
-                        $indexes);
+                SPHINX_BINARY_DIR,
+                SPHINX_CONFIG_FILE,
+                $indexes);
 
         exec($cmd, $output, $ret);
         if ($ret !== 0) {
