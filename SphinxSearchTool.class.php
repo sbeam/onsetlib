@@ -23,7 +23,8 @@ class SphinxSearchTool {
         if (!empty($offset))
             $offset = sprintf('--offset %d', $offset);
 
-        $cmd = sprintf('/usr/bin/search %s %s --config %s %s',
+        $cmd = sprintf('%s/search %s %s --config %s %s',
+                        SPHINX_BINARY_DIR,
                         $limit, $offset,
                         SPHINX_CONFIG_FILE,
                         $terms);
@@ -55,10 +56,14 @@ class SphinxSearchTool {
         else
             $indexes = '--all';
 
-        $cmd = '/usr/bin/indexer --config ' . SPHINX_CONFIG_FILE . ' ' . $indexes;
+        $cmd = sprintf('%s/indexer --config %s %s',
+                        SPHINX_BINARY_DIR,
+                        SPHINX_CONFIG_FILE,
+                        $indexes);
+
         exec($cmd, $output, $ret);
         if ($ret !== 0) {
-            trigger_error("Could not run Sphinx indexer!: ".join("\n", $output), E_USER_WARNING);
+            trigger_error("Could not run Sphinx indexer!: ".join("\n", $output), E_USER_ERROR);
         }
     }
 
