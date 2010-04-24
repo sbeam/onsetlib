@@ -66,9 +66,8 @@ class fu_HTML_Table extends HTML_Table {
                 $cells[] = $label;
             }
         }
-        if (!isset($attribs["class"])) $attribs["class"] = $this->th_class;
 
-        parent::addRow($cells, $attribs, $type);
+        parent::addRow($cells, $this->th_class, $type);
     }
 
     function _invertDir($dir) {
