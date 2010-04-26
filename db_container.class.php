@@ -86,6 +86,30 @@ class db_container extends PEAR {
     /** name of sequence to get new row'ids from - if null the table name will be used */
     var $_id_sequence = null;
 
+    /** map column names to functions that will check values for each
+     *
+     * looks like: 
+     *   field => (function, type, message, args)
+     * where field : the columnname/key in $vals and in the table
+     *       function : a string, 2-element array, or lambda for is_callable
+     *       type optional : "insert" or "update", or null/unset will apply to both
+     *       message optional : string sprintf format with one var, for error message to display
+     *       args optional : mixed any args that function needs, see validate_strlen()
+     */
+    protected $validations = array();
+
+    /** list of validation errors created via do_validate()  */
+    protected $_validation_errors;
+
+    /** should do_validate() throw a dbContainerValidationException, or just return false */
+    public $validation_throws_exception = false;
+    
+    /** constants for validation methods, should be one for each method. just a nicety */
+    const ERROR_VAL_NOTEMPTY = -1;
+    const ERROR_VAL_STRLEN = -2;
+    const ERROR_VAL_NOTINT = -3;
+
+
 
     /**
      * constructor function
@@ -636,6 +660,141 @@ class db_container extends PEAR {
         $this->set_offset($offset);
         $this->set_range($range);
     }
+
+
+
+    /**
+     * get list of validation errors current
+     *
+     * @return array            null if do_validate() has not been called
+     */
+    function get_validation_errors() {
+        return $this->_validation_errors;
+    }
+
+
+    /**
+     * validate based on the content of property $validations
+     *
+     * @see $validations for format
+     *
+     * @param $vals array       k=>v pairs to inspect for matching methods
+     * @return bool 
+     * @throws dbContainerValidationException   -if $::validation_throws_exception is true
+     */
+    function do_validate($vals, $skip_unset=false) {
+
+        $this->_validation_errors = array();
+
+        if (!empty($this->validations)) {
+            foreach ($this->validations as $col => $params) {
+                if ($skip_unset and !isset($vals[$col])) continue;
+                $value = (isset($vals[$col]))? $vals[$col] : null;
+                if (is_string($params)) {
+                    $func = $params;
+                    $params = array();
+                }
+                else {
+                    $func = array_shift($params);
+                }
+
+                $has_id = ($this->get_id() !== null);
+                $skip = (isset($params[0]) && ( ($params[0] == 'insert' && $has_id) || ($params[0] == 'update' && !$has_id)));
+                if (!$skip) {
+
+                    $msgf = (isset($params[1]))? $params[1] : null; // special message set in validations
+                    $args = (isset($params[2]))? $params[2] : null; // special params for the function
+
+                    if (is_callable($func)) 
+                        call_user_func_array($func, array($col, $value, $msgf, $args));
+                    elseif (is_callable(array($this, $func))) {
+                        $this->$func($col, $value, $msgf, $args);
+                    }
+                    else
+                        trigger_error("Unknown validation method '$func' called", E_USER_ERROR);
+                }
+            }
+            if (!empty($this->_validation_errors)) {
+                if ($this->validation_throws_exception)
+                    throw new dbContainerValidationException($this->_validation_errors);
+                else
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * add an error to the stack.
+     */
+    protected function _push_validation_error($msgf, $code, $col=null, $value=null) {
+        $msg = array('message' => sprintf($msgf, (isset($this->colmap[$col]))? $this->colmap[$col][0] : $col),
+                     'code' => $code,
+                     'column' => $col,
+                     'value' => $value);
+        $this->_validation_errors[] = $msg;
+    }
+
+    /**
+     * validate that $value is a numeric whole number value
+     */
+    function validate_integer($col, $value, $msg=null) {
+        if (!is_numeric($value) or (int)$value != $value) {
+            if (!$msg) $msg = "%s must be a whole number";
+            $this->_push_validation_error($msg, self::ERROR_VAL_NOTINT, $col, $value);
+        }
+    }
+
+    /**
+     * validate that $value is not empty
+     */
+    function validate_notempty($col, $value, $msg=null) {
+        if (empty($value)) {
+            if (!$msg) $msg = "%s cannot be empty";
+            $this->_push_validation_error($msg, self::ERROR_VAL_NOTEMPTY, $col, $value);
+        }
+    }
+
+    /**
+     * validate that $value is longer than $args chars
+     */
+    function validate_strlen($col, $value, $msg=null, $args=null) {
+
+        if (!is_numeric($args))
+            trigger_error("length argument must be numeric", E_USER_WARNING);
+
+        $args = intval($args);
+        if (strlen($value) < $args) {
+            if (!$msg) $msg = "%s must be longer than $args characters";
+            $this->_push_validation_error($msg, self::ERROR_VAL_STRLEN, $col, $value);
+        }
+    }
+
 }
 
-?>
+/** std Exception subclass used for validation errors in do_validate() */
+class dbContainerValidationException extends Exception {
+
+
+    var $_userErrors;
+
+    function getUserInfo() {
+        return $this->_userErrors;
+    }
+
+    function __construct($errorInfo, $code=null) {
+        if (is_array($errorInfo)) {
+            $msg = '';
+            foreach ($errorInfo as $err) {
+                $msg .= $err['message'] . "; ";
+            }
+            $msg = substr($msg, 0, -2);
+            $this->_userErrors = $errorInfo;
+            parent::__construct($msg, $code);
+        }
+        else {
+            parent::__construct($errorInfo, $code);
+        }
+    }
+}
+
