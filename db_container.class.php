@@ -248,7 +248,10 @@ class db_container extends PEAR {
         $sql = $this->_fetch_sql($coldef);
         $res =& $this->db->query($sql);
 
-        if (! $row = $res->fetchRow()) {
+        if (PEAR::isError($res)) {
+            $err = $res->getDebugInfo();
+        }
+        elseif (! $row = $res->fetchRow()) {
             $err = $this->raiseError('No matching record found.', 1002, PEAR_ERROR_RETURN);
         }
         else {
