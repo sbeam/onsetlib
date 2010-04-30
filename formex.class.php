@@ -1276,12 +1276,12 @@ class formex extends PEAR
 
                     case 'state_abbr': // if US or Canada based on "country", or there no "country", make sure is a 2-letter abbr.
                         if (empty($posted['country']) or $posted['country'] == 'US') {
-                            if (strlen($posted[$ff]) != 2 or !formex_field::get_states_opts(true, $posted[$ff])) {
+                            if (strlen($posted[$ff]) != 2 or !formex_field::get_states_opts(true, strtoupper($posted[$ff]))) {
                                 $ferr = "Please use a valid 2-letter state abbreviation";
                             }
                         }
                         elseif (!empty($posted['country']) and $posted['country'] == 'CA') {
-                            if (strlen($posted[$ff]) != 2 or !formex_field::get_canadian_provs(true, $posted[$ff])) {
+                            if (strlen($posted[$ff]) != 2 or !formex_field::get_canadian_provs(true, strtoupper($posted[$ff]))) {
                                 $ferr = "Please use a valid 2-letter Canadian province abbreviation";
                             }
                         }
