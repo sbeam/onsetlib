@@ -63,7 +63,7 @@ class SphinxSearchTool {
 
         exec($cmd, $output, $ret);
         if ($ret !== 0) {
-            trigger_error("Could not run Sphinx indexer!: ".join("\n", $output), E_USER_WARNING);
+            trigger_error("Could not run Sphinx indexer!: ".join("\n", $output), E_USER_ERROR);
         }
     }
 
