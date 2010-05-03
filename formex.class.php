@@ -1291,8 +1291,8 @@ class formex extends PEAR
                         if (!empty($posted[$ff]) && !self::is_proper_email($posted[$ff])) {
                             $ferr = "'%2\$s' is not a valid email address. Please enter a complete
                                         email address, i.e. 'jdoe@example.com', in the '%1\$s' field.";
+                            break;
                         }
-                        break;
 
                     default:
                         if (isset($posted[$ff]) && is_array($posted[$ff]) && 0 == count($posted[$ff])) {
