@@ -1275,12 +1275,13 @@ class formex extends PEAR
                         break;
 
                     case 'state_abbr': // if US or Canada based on "country", or there no "country", make sure is a 2-letter abbr.
-                        if (empty($posted['country']) or $posted['country'] == 'US') {
+                        $country_formfield = $this->field_prefix . 'country';
+                        if (empty($posted[$country_formfield]) or $posted[$country_formfield] == 'US') {
                             if (strlen($posted[$ff]) != 2 or !formex_field::get_states_opts(true, strtoupper($posted[$ff]))) {
                                 $ferr = "Please use a valid 2-letter state abbreviation";
                             }
                         }
-                        elseif (!empty($posted['country']) and $posted['country'] == 'CA') {
+                        elseif (!empty($posted[$country_formfield]) and $posted[$country_formfield] == 'CA') {
                             if (strlen($posted[$ff]) != 2 or !formex_field::get_canadian_provs(true, strtoupper($posted[$ff]))) {
                                 $ferr = "Please use a valid 2-letter Canadian province abbreviation";
                             }
