@@ -17,7 +17,10 @@ class fu_HTML_Table extends HTML_Table {
     // same as addRow() but adds my special params and auto-calculates bgcolor
     function addRow($contents, $special_class="", $hilite = true, $click_go=null, $use_rel_link=false) {
         $attrs = array("valign" => "middle",
-                       "class"=> ($special_class)? $special_class : $this->td_class);
+                       "class"=> $this->td_class);
+
+        if ($special_class) $attrs['class'] .= ' ' . $special_class;
+
         if ($hilite) {
             $attrs['onmouseover'] = "this.style.saveBG = this.style.backgroundColor; this.style.backgroundColor = '{$this->bgcolor_hilite}'";
             $attrs['onmouseout'] = "this.style.backgroundColor = this.style.saveBG";
