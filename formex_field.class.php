@@ -274,10 +274,13 @@ class formex_field
     function _field_text($fval) 
     {
         $fval = (empty($fval) && !empty($this->opts))? $this->opts : $fval;
+        if (is_array($fval) && !empty($this->attribs['multi']))
+            $fval = ''; // we can't handle this here. Don't put "Array"
 
-        return sprintf("<input type=\"text\" id=\"%s\" name=\"%s\" value=\"%s\" size=\"%d\" maxlength=\"%d\" class=\"%s\" %s />\n",
+        return sprintf("<input type=\"text\" id=\"%s\" name=\"%s%s\" value=\"%s\" size=\"%d\" maxlength=\"%d\" class=\"%s\" %s />\n",
                         $this->fname, 
                         $this->fname, 
+                        (!empty($this->attribs['multi']))? '[]':'', 
                         $this->_htmlentities($fval), 
                         $this->_get_field_size(), 
                         $this->attribs['maxlength'], 
