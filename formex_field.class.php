@@ -545,12 +545,12 @@ class formex_field
     */
     function _field_radio($fval) 
     {
-        $res = "<table border=\"0\">\n";
+        $res = "<div class=\"formexRadio\">\n";
 
         $opts = $this->opts; # $this->_array_stringify($this->opts);
         foreach ($opts as $k => $v) {
-            $res .= '<tr>';
-            $btn = sprintf("<td><input type=\"radio\" value=\"%s\" name=\"%s\" id=\"%s\" class=\"%s\" %s %s /></td>\n",
+            $res .= "<div class=\"formexRadioItem\">\n";
+            $btn = sprintf("<input type=\"radio\" value=\"%s\" name=\"%s\" id=\"%s\" class=\"%s\" %s %s />",
                             $k,
                             $this->fname,
                             $this->fname,
@@ -558,21 +558,14 @@ class formex_field
                             ($fval !== "" && $fval == $k)? "checked=\"1\"" : "",
                             $this->extra_attribs);
 
-            $label = sprintf("<td align=\"%s\" valign=\"top\"><span class=\"%s\">%s</span></td>",
-                            (!empty($this->attribs['buttons_right']))? 'right' : 'left',
+            $label = sprintf("<label class=\"%s\">%s",
                             (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
                             $v);
 
-            if (!empty($this->attribs['buttons_right'])) {
-                $res .= $label . $btn;
-            }
-            else {
-                $res .= $btn . $label;
-            }
-            $res .= '</tr>';
-
+            $res .= $label . $btn . '</label>';
+            $res .= "</div>";
         }
-        $res .= "</table>\n\n";
+        $res .= "</div>";
         return $res;
     }
 
@@ -630,7 +623,6 @@ class formex_field
     */
     function _field_checkarray($fval, $or_field=0) 
     {
-        $res = "<table border=\"0\">\n";
         if (is_array($fval)) {
             $postedvals = $fval;  // copy the current vals for safety + reset()
         }
@@ -649,10 +641,10 @@ class formex_field
                 }
             }
         }
+        $res = "<div class=\"formexCheckarray\">\n";
         $classname = (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class;
         foreach ($opts as $k => $txt) { // (reset($opts); $txt=current($opts); next($opts) ) {
-            $res .= sprintf("<tr><td align=\"right\"><span class=\"%s\">%s</span></td>
-                             <td align=\"left\"><input type=\"checkbox\" value=\"%s\" name=\"%s[]\" class=\"%s\" %s %s /></td></tr>\n",
+            $res .= sprintf("<span><label class=\"%s\">%s<input type=\"checkbox\" value=\"%s\" name=\"%s[]\" class=\"%s\" %s %s /></label></span>\n",
                             $classname, 
                             $txt,
                             $k,
@@ -662,17 +654,17 @@ class formex_field
                             $this->extra_attribs);
         }
         if ($or_field) { // now put the "Other" text field
-            $res .= sprintf("<tr><td align=\"right\" valign=\"middle\">
-                                    <span class=\"%s\">Other:</span></td>\n<td>\n",
+            $res .= sprintf("<div class=\"formexFieldCheckarray_other\"><span class=\"%s\">Other:</span>",
                             $classname);
 
             $othersize = $this->_get_field_size - 15; // comp. for table width
             $other = new formex_field($this->fex, $this->name.'[]', array('Other field', 'text', 1, array('size'=>$othersize)));
             $other->render_html($other_was);
             $res .= $other->html;
+            $res .= "</div>";
             unset($other);
         }
-        $res .= "</td></tr></table>\n\n";
+        $res .= "</div>";
         return $res;
     }
 
