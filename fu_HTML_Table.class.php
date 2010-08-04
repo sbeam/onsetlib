@@ -77,6 +77,11 @@ class fu_HTML_Table extends HTML_Table {
         return ($dir == 'A' or $dir == 'ASC')? 'D' : 'A';
     }
 
+    /** alias for addRow() */
+    function addRow_fu($contents, $special_class="", $hilite = true, $click_go=null, $use_rel_link=false) {
+        return $this->addRow($contents, $special_class, $hilite, $click_go, $use_rel_link);
+    }
+
 }
 
 ?>
