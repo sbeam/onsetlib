@@ -882,15 +882,14 @@ class formex_field
     function _field_autocomplete($fval)
     {
 
-        $paramname = (isset($this->attribs['url']))? $this->attribs['url'] : '';
-
         $text = new formex_field($this->fex, $this->fname, array(null, 'text', null, null, $this->extra_attribs, null));
         $res = $text->get_html(null);
 
+        $optlist = json_encode($this->opts);
+
         $res .= "<script type=\"text/javascript\">
-            var availableTags = ['ActionScript', 'AppleScript', 'Asp', 'BASIC', 'C', 'C++', 'Clojure', 'COBOL', 'ColdFusion', 'Erlang', 'Fortran', 'Groovy', 'Haskell', 'Java', 'JavaScript', 'Lisp', 'Perl', 'PHP', 'Python', 'Ruby', 'Scala', 'Scheme' ];
             $( function() {
-                $('#{$this->fname}').autocomplete({source:availableTags});
+                $('#{$this->fname}').autocomplete({source:{$optlist}});
             });
             </script>";
         return $res;
