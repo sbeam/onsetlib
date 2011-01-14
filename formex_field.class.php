@@ -882,7 +882,7 @@ class formex_field
     function _field_autocomplete($fval)
     {
 
-        $text = new formex_field($this->fex, $this->fname, array(null, 'text', null, null, $this->extra_attribs, null));
+        $text = new formex_field($this->fex, $this->fname, array(null, 'text', $fval, null, $this->extra_attribs, null));
         $res = $text->get_html(null);
 
         $optlist = json_encode($this->opts);
