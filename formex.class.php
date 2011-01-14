@@ -830,7 +830,7 @@ class formex extends PEAR
         }
         if (isset($this->_require_autocomplete_js)) {
             $dir = $this->extra_js_src_dir;
-            $res .= '<script type="text/javascript" src="'.$dir.'/autocomplete.js" ></script>';
+            $res .= '<script type="text/javascript" src="'.$dir.'/jquery-ui-1.8.7.autocomplete-bundle.min.js" ></script>';
         }
         if ($this->_has_richTextEditor) {
             $js = 'tinymce/jscripts/tiny_mce/tiny_mce.js';

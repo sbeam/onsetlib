@@ -881,15 +881,18 @@ class formex_field
      */
     function _field_autocomplete($fval)
     {
-        $res = '<div class="formexACPositioner" style="position: relative">';
-        $res .= $this->_field_hidden($fval);
 
-        $extra = $this->extra_attribs . ' autocomplete="off" onkeyup="formexACDoCompletion(this)" onblur=""';
-        $text = new formex_field($this->fex, $this->fname.'ACInput', array(null, 'text', null, null, $extra, null));
-        $res .= $text->get_html(null);
+        $paramname = (isset($this->attribs['url']))? $this->attribs['url'] : '';
 
-        $res .= '</div>';
-        $res .= '<div name="'.$this->fname.'" id="formexACMenuPopup-'.$this->fname.'" class="formexACMenuPopup" style="position: absolute;"><div class="formexACSelectInner"></div></div>';
+        $text = new formex_field($this->fex, $this->fname, array(null, 'text', null, null, $this->extra_attribs, null));
+        $res = $text->get_html(null);
+
+        $res .= "<script type=\"text/javascript\">
+            var availableTags = ['ActionScript', 'AppleScript', 'Asp', 'BASIC', 'C', 'C++', 'Clojure', 'COBOL', 'ColdFusion', 'Erlang', 'Fortran', 'Groovy', 'Haskell', 'Java', 'JavaScript', 'Lisp', 'Perl', 'PHP', 'Python', 'Ruby', 'Scala', 'Scheme' ];
+            $( function() {
+                $('#{$this->fname}').autocomplete({source:availableTags});
+            });
+            </script>";
         return $res;
     }
 
