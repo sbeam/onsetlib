@@ -887,11 +887,22 @@ class formex_field
 
         $optlist = json_encode($this->opts);
 
-        $res .= "<script type=\"text/javascript\">
-            $( function() {
-                $('#{$this->fname}').autocomplete({source:{$optlist}});
-            });
-            </script>";
+        $minlength = (isset($this->attribs['minlength']))? $this->attribs['minlength'] : 0;
+        
+        if (!isset($this->attribs['multiple'])) {
+            $res .= "<script type=\"text/javascript\">
+                     $( function() { $('#{$this->fname}').autocomplete({source:{$optlist}, minlength:$minlength}); });
+                     </script>";
+        } else { // cribbed from demo at http://jqueryui.com/demos/autocomplete/
+            $res .= "<script type=\"text/javascript\">
+                $( function() { $('#{$this->fname}').autocomplete({source:{$optlist}, minlength:$minlength,
+                    source: function(request,response) { response( $.ui.autocomplete.filter( {$optlist}, request.term.split( /,\s*/ ).pop() )); },
+                    focus: function() { return false; },
+                    select: function(event,ui) { var terms=this.value.split( /,\s*/ ); terms.pop(); terms.push(ui.item.value); terms.push(''); this.value = terms.join(', '); return false; }, 
+                    });
+                });
+                </script>";
+        }
         return $res;
     }
 
