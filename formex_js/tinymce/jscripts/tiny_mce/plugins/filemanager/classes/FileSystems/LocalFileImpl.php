@@ -411,8 +411,8 @@ class Moxiecode_LocalFileImpl extends Moxiecode_BaseFile {
 			// Close handle
 			closedir($fHnd);
 
-			usort($dirArray);
-			usort($fileArray);
+			sort($dirArray);
+			sort($fileArray);
 
 			// Add dirs
 			foreach ($dirArray as $adir) {
