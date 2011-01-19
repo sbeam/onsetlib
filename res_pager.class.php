@@ -157,6 +157,8 @@ class res_pager {
                         'to'      => $this->to,      // the row to stop fetching
                         'limit'   => $this->limit,   // How many results per page
                         'pages'   => $this->pages,
+                        'next_page' => ($this->numpages == 1 or $this->current == $this->numpages)? null : $this->current+1,
+                        'prev_page' => ($this->numpages == 1 or $this->current == 1)? null : $this->current-1,
                         'start_page' => $this->start_page,
                         'end_page' => $this->end_page);
 
