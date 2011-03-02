@@ -237,7 +237,7 @@ class formex extends PEAR
     /**
      * @var string $field_prefix to be prefixed to the name attribute of each form element
      */
-    var $field_prefix = "f_";
+    var $field_prefix = "";
 
     /**
      * @var string $element_class class atttribute of each HTML form element
@@ -294,6 +294,11 @@ class formex extends PEAR
      * @var array $_elems \private - the array of form elements and their params
      */
     var $_elems = array();
+
+    /**
+     * contains elem => msg map of any errors returned by validate()
+     */
+    var $errors = array();
 
     /**
      * @var array $elem_vals set the values for the elements (keys) to the corresponding values (pass array directly from $db->fetchRow)
@@ -671,7 +676,7 @@ class formex extends PEAR
         }
 
         $star = '';
-        if ($this->label_add_star_for_required_fields and $elem->error_state == FORMEX_FIELD_REQUIRED) {
+        if ($this->label_add_star_for_required_fields and $elem->error_state >= FORMEX_FIELD_REQUIRED) {
             $star = sprintf('<span class="%s">*</span>', $this->label_star_class);
         }
 
@@ -956,7 +961,7 @@ class formex extends PEAR
     * assembles and returns html for the entire form
     * @return string a block of HTML from <form> to </form> with a complete formex() instance entirely built and ready to include in a page
     */
-    function render_form () 
+    function render () 
     {
         $hiddens = '';
 
@@ -1044,7 +1049,7 @@ class formex extends PEAR
     */
     function display () 
     {
-        print $this->render_form();
+        print $this->render();
     }
 
 
@@ -1207,12 +1212,13 @@ class formex extends PEAR
      * @param $posted array the values to be checked (usually $_POST or $_GET)
      * @return false if passed, otherwise an list of error messages
      */
-    function validate($posted)
+    function validate($posted=null)
     {
-        $errs = array();
+        if (!$posted)
+            $posted = $this->posted_vars;
 
         if (!is_array($posted)) {
-            trigger_error("check_form(): argument is not an array", E_USER_NOTICE);
+            trigger_error("validate(): argument is not an array", E_USER_NOTICE);
             return false;
         }
 
@@ -1313,15 +1319,22 @@ class formex extends PEAR
 
             if ($ferr) {
                 $this->_elems[$k]->set_error();
-                $errs[$k] = sprintf($ferr, $this->_elems[$k]->descrip, $posted[$ff]);
+                $this->add_error($k, sprintf($ferr, $this->_elems[$k]->descrip, $posted[$ff]));
             }
         }
-        if (count($errs) > 0) {
-            return $errs;
-        }
+        return (count($this->errors) == 0);
     }
 
 
+    /**
+     * add an error to this form instance
+     *
+     * @param $elem str element key
+     * @param $msg str error text
+     */
+    function add_error($elem, $msg) {
+        $this->errors[$elem] = $msg;
+    }
 
 
 
