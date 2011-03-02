@@ -1,31 +1,31 @@
 <?php
 /*  formex - PHP class for HTML form auto-generation and management
- *  Copyright 2000-2005 SBeam, Onset Corps - sbeam@onsetcorps.net
+ *
+ * Copyright 2000-2005 SBeam, Onset Corps - sbeam@onsetcorps.net
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-// +----------------------------------------------------------------------+
-//  This file is part of formex.
-//
-//  formex is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
-//
-//  formex is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with formex; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-// +----------------------------------------------------------------------+
-
-*/
-
-/* 
+/**
  *  formex() - form controller class
  *
- *   creates a dynamic XHTML form based on arrays of elements and pre-set values
+ *   creates a dynamic HTML form based on arrays of elements and pre-set values
  *   which can be easily passed to a template system or dumped to the client.
  */
 
@@ -40,7 +40,7 @@
  *    By default, the output of the final display() method is a two-column XHTML
  *    table. Field labels are in the left column and the elements are on right.
  *    Hidden fields are tacked on at the end, and the submit button right-aligned
- *    in the last row, which spanns both columns.  The reset button can be turned
+ *    in the last row, which spans both columns.  The reset button can be turned
  *    on if needed.
  *
  *    A sample invocation is as follows:
@@ -191,7 +191,7 @@
  *
  *
 */
-// $Id: formex.class.php,v 1.5 2007/02/28 20:04:40 sbeam Exp $
+
 
 // used for error conditions of individual form elements
 define ('FORMEX_FIELD_NOERR', 0); // no error

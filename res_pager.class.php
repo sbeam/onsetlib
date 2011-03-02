@@ -14,22 +14,31 @@
  * derived from Pager class by Thomas V.V.Cox cox@idecnet.com
  * http://vulcanonet.com/soft/pager/
  * Many changes to API and logic but build() is still similar
- * 
- * @copyright    2004 S Beam, OnsetCorps <sbeam@onsetcorps.net>
- * @author       S Beam <sbeam@onsetcorps.net>
- * @version      1.2
- * @last_update  2004-11-28
- * @description  create an array useful for paging DB result sets
- * @requires:	 PHP 5.03 or higher
  *
- * *******************************************************
- * License LGPL -> http://www.gnu.org/copyleft/lesser.txt
- * (c) 2004 by S Beam, OnsetCorps
- *******************************************************
+ * LICENSE
+ *
+ * Copyright 2007 by Sam Beam
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  * 
  */
 
-//  $Id: res_pager.class.php,v 1.1.1.1 2006/06/02 20:08:01 sbeam Exp $
 
 class res_pager {
 
