@@ -315,9 +315,10 @@ class formex_field
 
         $myval = (empty($fval) && !empty($this->opts))? $this->opts : $fval;
 
-        return sprintf("<input type=\"hidden\" name=\"%s\" id=\"%s\" value=\"%s\" />",
+        return sprintf("<input type=\"hidden\" name=\"%s\" id=\"%s\" class=\"%s\" value=\"%s\" />",
                        $this->fname,
                        $this->fname,
+                       ($this->attribs['class'])? $this->attribs['class'] : '',
                        $this->_htmlentities($myval)
                        ) ;
     }
@@ -1199,113 +1200,67 @@ EOJS;
     }
 
    
-    /*!
-    \private
-    sets up a small "subform" in a <fieldset> tag which thanks to the magic of DOM manipulation
-    can be duplicated WITHIN the mainform. Thus you can have variable arbitrary numbers of sets of
-    fields. More info to come.
-    */
-    function _field_expandable_fieldset ($fval) 
-    {
+    /**
+     * sets up a small "subform" in a <fieldset> tag which thanks to the magic of DOM manipulation
+     * can be duplicated WITHIN the mainform. Thus you can have variable arbitrary numbers of sets of
+     * fields. More info to come.
+	 *
+	 * to use this, include js/grouped_fieldset.js in the applicable pages
+     */
+    function _field_grouped_fieldset ($fval) {
 
         $res = '';
         $setName = $this->name;
 
         // how many sets to show to begin w/?
-        if (!empty($fval) and is_array($fval)) {
+        if (!empty($fval) and is_array($fval))
             $numsets = count($fval);
-        }
-        elseif (isset($this->attribs['numsets'])) {
-            $numsets = $this->attribs['numsets'];
-        }
-        else {
-            $numsets = 1;
-        }
-
-        /* suss out attribs */
-        if (!isset($this->attribs['fieldset_control_pos'])) $this->attribs['fieldset_control_pos'] = 'bottom';
-        if (!isset($this->attribs['lang_num_fieldsets'])) $this->attribs['lang_num_fieldsets'] = '# Fieldsets';
-
-        /* $fval should be a list of hashes - each elem belongs to a fieldset,
-         * the name=>value pairs are the default values for each field w/in
-         * that set */
-        $res .= "<script language=\"javascript\" type=\"text/javascript\">
-                <!--
-                expandableList[expandableList.length] = '$setName';
-                var vals$setName = new Array();
-                ";
-
-        for ($i = 0; $i < $numsets; $i++) {
-            $res .= "vals$setName"."[$i] = new Object;\n";
-            if (isset($fval[$i])) {
-                foreach ($fval[$i] as $subname => $val) {
-                    $res .= sprintf("    vals%s[%d].%s%s = '%s';\n",
-                                    $setName,
-                                    $i,
-                                    $this->field_prefix,
-                                    $subname,
-                                    preg_replace("/'/", "\\'", $val));
-                }
-            }
-        }
-
-        $res .= '
-                // -->
-                </script>
-                ';
+		else
+			$numsets = (isset($this->attribs['numsets']))? $this->attribs['numsets'] : 1;
 
         $hiddens = '';
-        $res .= '<div id="readroot_'.$setName.'" style="display: none; margin:0; padding: 0">';
-        $res .= '<fieldset class="'.$this->element_class.'">';
-        $res .= $this->fex->table_start();
+        $res .= '<div id="proto_'.$setName.'" data-setname='.$setName.' class="formex_group" style="display: none; margin:0; padding: 0">
+				    <fieldset class="'.$this->element_class.'"><ul>';
+					
 
         foreach ($this->opts as $name => $parms) {
-                $newelem = new formex_field($this->fex, $name, $parms);
+			$newelem = new formex_field($this->fex, $name, $parms);
 
-                // get the form element from the approved method
-                if ($newelem->type != 'hidden') { // add html to hiddens string and get out
-                    $res .= $this->fex->table_row_begin();
-                    $res .= $this->fex->field_label($newelem);
-                    $res .= $this->fex->table_row_middle();
-                    $res .= $newelem->get_html('');
-                    $res .= $this->fex->table_row_end();
-                }
-                else {
-                    $hiddens = $newelem->get_html('');
-                }
-                unset($newelem);
+			$res .= '<li>';
+			// get the form element from the approved method
+			if ($newelem->type != 'hidden') { // add html to hiddens string and get out
+				$res .= $this->fex->field_label($newelem);
+				$res .= $newelem->get_html('');
+			}
+			else {
+				$hiddens = $newelem->get_html('');
+			}
+			$res .= '</li>';
         }
 
-        $res .= $hiddens;
-        $res .= '</tr></table>
-                 </fieldset>
-                 </div>';
+        $res .= "</ul>$hiddens</fieldset></div>";
 
-        if ($this->attribs['fieldset_control_pos'] == 'top' or $this->attribs['fieldset_control_pos'] == 'both') {
-            $res .= $this->_exp_fieldset_control($setName, $this->attribs['lang_num_fieldsets']);
-        }
+		$control_label = (isset($this->attribs['lang_num_fieldsets']))? $this->attribs['lang_num_fieldsets'] : null;
+        $res .= $this->_exp_fieldset_control($setName, $control_label);
 
-        $res .= '<span id="writeroot_'.$setName.'"></span>';
-
-        if ($this->attribs['fieldset_control_pos'] == 'bottom' or $this->attribs['fieldset_control_pos'] == 'both') {
-            $res .= $this->_exp_fieldset_control($setName, $this->attribs['lang_num_fieldsets']);
-        }
-
-        // $res .= $this->_field_hidden("f_count_$setName", count($fval));
-        $hidcnt = new formex_field($this->fex, 'count_'.$setName, array('count', 'hidden'));
+        $hidcnt = new formex_field($this->fex, 'count_'.$setName, array('count', 'hidden', $numsets, array('class'=>'initial_fieldsets', false)));
         $res .= $hidcnt->get_html($numsets);
+
+		$res .= "<script type=\"text/javascript\">
+						var formex_groupvalues = formex_groupvalues || [];
+						formex_groupvalues['{$setName}'] = ".json_encode($fval).";
+				</script>";
 
         return $res;
     }
 
-function _exp_fieldset_control($setName, $lang = '# Fieldsets') {
-        $res = sprintf('<span id="fieldsetControl%s" class="formexFieldsetControllers %s">', $setName, $this->element_class);
-        $res .= $lang . '
-                 <a href="#" onclick="moreFields(\''.$setName.'\'); return false" >+</a>&nbsp;/&nbsp;';
-        $res .= '<a href="#" onclick="lessFields(\''.$setName.'\'); return false" >&ndash;</a>
-                 </span>';
-        return $res;
-}
+
+	function _exp_fieldset_control($setName, $lang='') {
+		$res = sprintf('<span id="fieldsetControl%s" class="formexFieldsetControllers %s">', $setName, $this->element_class);
+		$res .= $lang;
+		$res .= '<a href="#" class="formex_group_addfields">+</a>/<a href="#" class="formex_group_subfields">&ndash;</a></span>';
+		return $res;
+	}
 
 
 

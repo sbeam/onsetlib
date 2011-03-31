@@ -1234,6 +1234,8 @@ class formex extends PEAR
 
                     case 'date':
                     case 'date_us':
+                    case 'datetime':
+
                         $day = (!empty($attribs['suppress_day']))? '01' : sprintf("%d", $posted[$ff . "_day"]);
 
                         $datefields = array(sprintf("%d", $posted[$ff . "_month"]),
