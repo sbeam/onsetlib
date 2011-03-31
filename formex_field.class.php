@@ -318,7 +318,7 @@ class formex_field
         return sprintf("<input type=\"hidden\" name=\"%s\" id=\"%s\" class=\"%s\" value=\"%s\" />",
                        $this->fname,
                        $this->fname,
-                       ($this->attribs['class'])? $this->attribs['class'] : '',
+                       (!empty($this->attribs['class']))? $this->attribs['class'] : '',
                        $this->_htmlentities($myval)
                        ) ;
     }
