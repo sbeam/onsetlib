@@ -72,6 +72,23 @@ var fex_grouped_fieldset = {
         var set = $(this.templates[setname]).clone();
         var container = $('#proto_'+setname).parent();
         $(container).children(':last').remove();
+    },
+
+    showhide : function() {
+
+        if ($(this).hasClass('enable_showhide')) {
+            var container = $(this).parents('.formexFieldGrouped_fieldset');
+            var fsets = $(container).find('fieldset.formex_grouped_fieldset');
+
+            if (fsets.length && $(fsets[0]).css('display') != 'none') {
+                $(fsets).slideUp(200, jQuery.proxy( function() { $(this).siblings('a').hide() }, this ));
+                $(container).removeClass('open');
+            }
+            else {
+                $(fsets).slideDown(200, jQuery.proxy( function() { $(this).siblings('a').show() }, this ));
+                $(container).addClass('open');
+            }
+        }
     }
 };
 
@@ -82,7 +99,7 @@ $( function() {
         fex_grouped_fieldset.init(this);
 	});
 
-    $('.formexFieldsetControllers a').bind('click', function() {
+    $('span.formexFieldsetControllers a').bind('click', function() {
         var setname = $(this).parent().attr('data-setname');
         if ($(this).hasClass('formex_group_addfields')) {
             fex_grouped_fieldset.add(setname);
@@ -92,5 +109,7 @@ $( function() {
         $(this).blur();
         return false;
     });
+
+    $('span.formexFieldsetControllers label').bind('click', fex_grouped_fieldset.showhide);
 
 });

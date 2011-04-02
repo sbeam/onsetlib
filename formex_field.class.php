@@ -1207,13 +1207,18 @@ EOJS;
      *
      * to enable this functionality, include js/grouped_fieldset.js in the applicable pages
      *
+     * attribs available:
+     *    enable_showhide : clicking on the group label will toggle display of the whole container
+     *    numsets : show this many sets by default (unless values are already given)
+     *
      * @example
      *  $fex = new formex();
      *  $fex->add_element('title',                      array('Title', 'text', null, null, true));
      *  $fex->add_element('post_date',                  array('Posting Time', 'datetime', null, null, true));
      *
+     *  $attribs = array('enable_showhide' => true);
      *  $members_fieldmap = array('name' => array('Name', 'text', null, null, true),
-     *                            'company' => array('Company', 'select', $company_opts, null, true));
+     *                            'company' => array('Company', 'select', $company_opts, $attribs, true));
      *
      *  $fex->add_element('members', array('Members', 'grouped_fieldset', $members_fieldmap, null, false));
      */
@@ -1249,11 +1254,11 @@ EOJS;
 
         $res .= "</ul>$hiddens</fieldset></div>";
 
-		$label = (isset($this->attribs['lang_num_fieldsets']))? $this->attribs['lang_num_fieldsets'] : $this->descrip;
+        $labelclass = (!empty($this->attribs['enable_showhide']))? 'enable_showhide' : '';
 
         /* "+" and "-" controls for adding and removing sets */
         $res .= "<span id=\"fieldsetControl$setName\" data-setname=\"$setName\" class=\"formexFieldsetControllers {$this->element_class}\">";
-		$res .= "<label>$label</label>";
+		$res .= "<label class=\"$labelclass\">{$this->descrip}</label>";
 		$res .= '<a href="#" class="formex_group_addfields">+</a> <a href="#" class="formex_group_subfields">&ndash;</a></span>';
 
 		$res .= "<script type=\"text/javascript\">
