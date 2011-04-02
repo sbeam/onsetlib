@@ -58,6 +58,7 @@ $( function() {
         } else {
             fex_grouped_fieldset.remove(setname);
         }
+        $(this).blur();
         return false;
     });
 
