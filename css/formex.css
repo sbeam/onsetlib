@@ -1,0 +1,61 @@
+/* helpful css for certain complex formex field types */
+
+/* formex grouped fieldsets *//*{{{*/
+span.formexFieldGrouped_fieldset { 
+    display: block;
+    padding: 0.4em 0.8em;
+    border: 1px solid #999;
+    background: #eee;
+}
+span.formexFieldGrouped_fieldset fieldset {
+    display: none;
+    margin: 0.8em 0;
+    clear: right;
+    background: #fff;
+}
+span.formexFieldGrouped_fieldset.open fieldset {
+    display: block;
+}
+span.formexFieldGrouped_fieldset fieldset ul {
+    list-style-type: none;
+    padding-left: 1.6em;
+    margin: 0;
+}
+span.formexFieldGrouped_fieldset fieldset li label {
+    display: block;
+    margin-top: 0.8em;
+}
+span.formexFieldGrouped_fieldset .controls {
+    display: block;
+}
+span.formexFieldGrouped_fieldset .controls label.enable_showhide {
+    font-weight: bold;
+    cursor: pointer;
+}
+span.formexFieldGrouped_fieldset .controls label.enable_showhide:before {
+    content:'+';
+}
+span.formexFieldGrouped_fieldset.open .controls label.enable_showhide:before {
+    content:'-';
+}
+span.formexFieldGrouped_fieldset .controls label.enable_showhide:hover {
+    text-decoration: underline;
+}
+span.formexFieldGrouped_fieldset .controls a {
+    display: none;
+    float: right;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    padding: 0 0.4em;
+    margin: 0 0.4em;
+    font-size: 1.2em;
+    border-radius: 0.6em;
+}
+span.formexFieldGrouped_fieldset .controls a.add {
+    background: #999;
+}
+span.formexFieldGrouped_fieldset .controls a.sub {
+    background: #ccc;
+}
+/*}}}*/
