@@ -889,27 +889,22 @@ class formex_field
     function _field_autocomplete($fval)
     {
 
-        $text = new formex_field($this->fex, $this->fname, array(null, 'text', $fval, null, $this->extra_attribs, null));
+        $minlength = (isset($this->attribs['minlength']))? $this->attribs['minlength'] : 0;
+
+        if (!empty($this->attribs['multiple'])) {
+            $this->attribs['class'] .= ' multiple';
+        }
+
+        $this->extra_attribs .= " data-minlength=\"$minlength\" ";
+
+        $text = new formex_field($this->fex, $this->fname, array(null, 'text', $fval, $this->attribs, $this->extra_attribs, null));
         $res = $text->get_html(null);
 
-        $optlist = json_encode($this->opts);
+		$res .= "<script type=\"text/javascript\">
+						var formex_autocomplete_opts = formex_autocomplete_opts || [];
+						formex_autocomplete_opts['{$this->fname}'] = ".json_encode($this->opts).";
+				</script>";
 
-        $minlength = (isset($this->attribs['minlength']))? $this->attribs['minlength'] : 0;
-        
-        if (!isset($this->attribs['multiple'])) {
-            $res .= "<script type=\"text/javascript\">
-                     $( function() { $('#{$this->fname}').autocomplete({source:{$optlist}, minlength:$minlength}); });
-                     </script>";
-        } else { // cribbed from demo at http://jqueryui.com/demos/autocomplete/
-            $res .= "<script type=\"text/javascript\">
-                $( function() { $('#{$this->fname}').autocomplete({source:{$optlist}, minlength:$minlength,
-                    source: function(request,response) { response( $.ui.autocomplete.filter( {$optlist}, request.term.split( /,\s*/ ).pop() )); },
-                    focus: function() { return false; },
-                    select: function(event,ui) { var terms=this.value.split( /,\s*/ ); terms.pop(); terms.push(ui.item.value); terms.push(''); this.value = terms.join(', '); return false; }, 
-                    });
-                });
-                </script>";
-        }
         return $res;
     }
 
