@@ -1239,7 +1239,7 @@ EOJS;
 
         $res .= "</ul>$hiddens</fieldset></div>";
 
-		$control_label = (isset($this->attribs['lang_num_fieldsets']))? $this->attribs['lang_num_fieldsets'] : null;
+		$control_label = (isset($this->attribs['lang_num_fieldsets']))? $this->attribs['lang_num_fieldsets'] : $this->descrip;
         $res .= $this->_exp_fieldset_control($setName, $control_label);
 
         $hidcnt = new formex_field($this->fex, 'count_'.$setName, array('count', 'hidden', $numsets, array('class'=>'initial_fieldsets', false)));
@@ -1256,7 +1256,7 @@ EOJS;
 
 	function _exp_fieldset_control($setName, $lang='') {
         $res = "<span id=\"fieldsetControl$setName\" data-setname=\"$setName\" class=\"formexFieldsetControllers {$this->element_class}\">";
-		$res .= $lang;
+		$res .= '<label>'.$lang .'</label>';
 		$res .= '<a href="#" class="formex_group_addfields">+</a> <a href="#" class="formex_group_subfields">&ndash;</a></span>';
 		return $res;
 	}
