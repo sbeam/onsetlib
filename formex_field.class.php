@@ -1220,15 +1220,14 @@ EOJS;
 
         $hiddens = '';
         $res .= '<div id="proto_'.$setName.'" data-setname='.$setName.' class="formex_group" style="display: none; margin:0; padding: 0">
-				    <fieldset class="'.$this->element_class.'"><ul>';
+				    <fieldset class="formex_grouped_fieldset '.$this->element_class.'"><ul>';
 					
 
         foreach ($this->opts as $name => $parms) {
 			$newelem = new formex_field($this->fex, $name, $parms);
 
 			$res .= '<li>';
-			// get the form element from the approved method
-			if ($newelem->type != 'hidden') { // add html to hiddens string and get out
+			if ($newelem->type != 'hidden') {
 				$res .= $this->fex->field_label($newelem);
 				$res .= $newelem->get_html('');
 			}
@@ -1250,15 +1249,15 @@ EOJS;
 						var formex_groupvalues = formex_groupvalues || [];
 						formex_groupvalues['{$setName}'] = ".json_encode($fval).";
 				</script>";
-
         return $res;
     }
 
 
+
 	function _exp_fieldset_control($setName, $lang='') {
-		$res = sprintf('<span id="fieldsetControl%s" class="formexFieldsetControllers %s">', $setName, $this->element_class);
+        $res = "<span id=\"fieldsetControl$setName\" data-setname=\"$setName\" class=\"formexFieldsetControllers {$this->element_class}\">";
 		$res .= $lang;
-		$res .= '<a href="#" class="formex_group_addfields">+</a>/<a href="#" class="formex_group_subfields">&ndash;</a></span>';
+		$res .= '<a href="#" class="formex_group_addfields">+</a> <a href="#" class="formex_group_subfields">&ndash;</a></span>';
 		return $res;
 	}
 
