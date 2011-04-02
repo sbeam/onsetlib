@@ -1257,9 +1257,9 @@ EOJS;
         $labelclass = (!empty($this->attribs['enable_showhide']))? 'enable_showhide' : '';
 
         /* "+" and "-" controls for adding and removing sets */
-        $res .= "<span id=\"fieldsetControl$setName\" data-setname=\"$setName\" class=\"formexFieldsetControllers {$this->element_class}\">";
+        $res .= "<span id=\"fieldsetControl$setName\" data-setname=\"$setName\" class=\"controls {$this->element_class}\">";
 		$res .= "<label class=\"$labelclass\">{$this->descrip}</label>";
-		$res .= '<a href="#" class="formex_group_addfields">+</a> <a href="#" class="formex_group_subfields">&ndash;</a></span>';
+		$res .= '<a href="#" class="add">+</a> <a href="#" class="sub">&ndash;</a></span>';
 
 		$res .= "<script type=\"text/javascript\">
 						var formex_groupvalues = formex_groupvalues || [];

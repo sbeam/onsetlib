@@ -99,9 +99,9 @@ $( function() {
         fex_grouped_fieldset.init(this);
 	});
 
-    $('span.formexFieldsetControllers a').bind('click', function() {
+    $('.formexFieldGrouped_fieldset span.controls a').bind('click', function() {
         var setname = $(this).parent().attr('data-setname');
-        if ($(this).hasClass('formex_group_addfields')) {
+        if ($(this).hasClass('add')) {
             fex_grouped_fieldset.add(setname);
         } else {
             fex_grouped_fieldset.remove(setname);
@@ -110,6 +110,6 @@ $( function() {
         return false;
     });
 
-    $('span.formexFieldsetControllers label').bind('click', fex_grouped_fieldset.showhide);
+    $('.formexFieldGrouped_fieldset span.controls label').bind('click', fex_grouped_fieldset.showhide);
 
 });
