@@ -1201,11 +1201,21 @@ EOJS;
 
    
     /**
-     * sets up a small "subform" in a <fieldset> tag which thanks to the magic of DOM manipulation
+     * sets up a small "subform" in a <fieldset> tag which thanks to the magic of jQuery manipulation
      * can be duplicated WITHIN the mainform. Thus you can have variable arbitrary numbers of sets of
-     * fields. More info to come.
-	 *
-	 * to use this, include js/grouped_fieldset.js in the applicable pages
+     * fields, for models/objects that are associated with the model/object in the main form.
+     *
+     * to enable this functionality, include js/grouped_fieldset.js in the applicable pages
+     *
+     * @example
+     *  $fex = new formex();
+     *  $fex->add_element('title',                      array('Title', 'text', null, null, true));
+     *  $fex->add_element('post_date',                  array('Posting Time', 'datetime', null, null, true));
+     *
+     *  $members_fieldmap = array('name' => array('Name', 'text', null, null, true),
+     *                            'company' => array('Company', 'select', $company_opts, null, true));
+     *
+     *  $fex->add_element('members', array('Members', 'grouped_fieldset', $members_fieldmap, null, false));
      */
     function _field_grouped_fieldset ($fval) {
 
