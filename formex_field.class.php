@@ -1229,8 +1229,8 @@ EOJS;
 			$numsets = (isset($this->attribs['numsets']))? $this->attribs['numsets'] : 1;
 
         $hiddens = '';
-        $res .= '<div id="proto_'.$setName.'" data-setname='.$setName.' class="formex_group" style="display: none; margin:0; padding: 0">
-				    <fieldset class="formex_grouped_fieldset '.$this->element_class.'"><ul>';
+        $res .= "<div id=\"proto_{$setName}\" data-numsets=\"{$numsets}\" data-setname=\"{$setName}\" class=\"formex_group\" style=\"display: none; margin:0; padding: 0\">
+                     <fieldset class=\"formex_grouped_fieldset {$this->element_class}\"><ul>";
 					
 
         foreach ($this->opts as $name => $parms) {
@@ -1249,11 +1249,12 @@ EOJS;
 
         $res .= "</ul>$hiddens</fieldset></div>";
 
-		$control_label = (isset($this->attribs['lang_num_fieldsets']))? $this->attribs['lang_num_fieldsets'] : $this->descrip;
-        $res .= $this->_exp_fieldset_control($setName, $control_label);
+		$label = (isset($this->attribs['lang_num_fieldsets']))? $this->attribs['lang_num_fieldsets'] : $this->descrip;
 
-        $hidcnt = new formex_field($this->fex, 'count_'.$setName, array('count', 'hidden', $numsets, array('class'=>'initial_fieldsets', false)));
-        $res .= $hidcnt->get_html($numsets);
+        /* "+" and "-" controls for adding and removing sets */
+        $res .= "<span id=\"fieldsetControl$setName\" data-setname=\"$setName\" class=\"formexFieldsetControllers {$this->element_class}\">";
+		$res .= "<label>$label</label>";
+		$res .= '<a href="#" class="formex_group_addfields">+</a> <a href="#" class="formex_group_subfields">&ndash;</a></span>';
 
 		$res .= "<script type=\"text/javascript\">
 						var formex_groupvalues = formex_groupvalues || [];
@@ -1263,13 +1264,6 @@ EOJS;
     }
 
 
-
-	function _exp_fieldset_control($setName, $lang='') {
-        $res = "<span id=\"fieldsetControl$setName\" data-setname=\"$setName\" class=\"formexFieldsetControllers {$this->element_class}\">";
-		$res .= '<label>'.$lang .'</label>';
-		$res .= '<a href="#" class="formex_group_addfields">+</a> <a href="#" class="formex_group_subfields">&ndash;</a></span>';
-		return $res;
-	}
 
 
 

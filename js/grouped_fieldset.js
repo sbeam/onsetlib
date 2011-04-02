@@ -35,7 +35,7 @@ var fex_grouped_fieldset = {
     init : function(elem) {
 		var setname = $(elem).attr('data-setname');
 
-		var numsets = $('#count_'+setname).val();
+		var numsets = $(elem).attr('data-numsets');
 
 		this.templates[setname] = $('fieldset', elem).remove();
 
