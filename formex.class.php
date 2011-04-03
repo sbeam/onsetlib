@@ -355,36 +355,6 @@ class formex extends PEAR
      */
     var $show_file_dims = true;
     
-    /**
-     * @var array $_onload_funcs array of functions to add to this window's onload event - special JS required
-     */
-    var $_onload_funcs = array();
-
-    /**
-     * @var array $_preload_funcs array of functions to be run at the top of the form inside <script> tags (for RTE)
-     */
-    var $_preload_funcs = array();
-
-    /**
-     * @var boolean $_require_extra_js flag to include special JS files - only needed for certain fields
-     * @access private
-     */
-    var $_require_extra_js = false;
-
-    /**
-     * @var string $extra_js_src_dir URL path to formex_extras.js file, if needed
-     */
-    var $extra_js_src_dir = "";
-
-    /**
-     * @var string $rte_js_src_dir URL path to richTextEditor.js file, if needed
-     */
-    var $rte_js_src_dir = '/admin/sicoma/rte';
-
-    /**
-     * @var boolean $js_src_inline set to true to look for formex_extras.js and richTextEditor.js in include_path, and inline the contents
-     */
-    var $js_src_inline = false;
 
     /**
      * @var boolean $_has_richTextEditor flag to track whether or not this form includes a RTE component.
@@ -531,30 +501,9 @@ class formex extends PEAR
 
             switch ($this->_elems[$k]->type) {
                 case 'file':
-                    $this->encoding = "multipart/form-data";
-                    break;
                 case 'image_upload':
                     $this->encoding = "multipart/form-data";
-                    $this->_require_extra_js = 1;
                     break;
-                case 'colorpicker':
-                    $this->_require_extra_js = 1;
-                    break;
-                case 'select_bicameral':
-                    $this->_require_extra_js = 1;
-                    $this->set_extra_form_attribs('onsubmit', 'formexBicameralSelectAll()');
-                    break;
-                case 'calendar':
-                    $this->_require_extra_js = 1;
-                    $this->_require_calendar_js = 1;
-                    break;
-                case 'captcha':
-                    $this->_require_extra_js = 1;
-                    break;
-                case 'richTextEditor':
-                    #$this->set_extra_form_attribs('onsubmit', 'getRteContent()');
-                    #$this->_preload_funcs['richTextEditor'] = 'initRTE();';
-                    $this->_has_richTextEditor = 1;
             }
         }
     }
@@ -591,17 +540,6 @@ class formex extends PEAR
                         $extras
                         );
 
-        // little JS if needed to initialize RTE or expanders fields
-        if (count($this->_onload_funcs)) {
-            $res .= "\n<script type=\"text/javascript\">\nwindow.onload=function() {\n";
-            $res .= join ("\n", array_values($this->_onload_funcs));
-            $res .= "\n}\n</script>\n";
-        }
-        if (count($this->_preload_funcs)) {
-            $res .= "\n<script type=\"text/javascript\">\n";
-            $res .= join ("\n", array_values($this->_preload_funcs));
-            $res .= "\n</script>\n";
-        }
         return $res;
     }
 
@@ -781,67 +719,6 @@ class formex extends PEAR
     }
 
 
-    /**
-    * writes <script> tags as appropriate to get JS for RTE and other special magic fields
-    * flags to use these are set in add_element() above
-    * @return string HTML fragment for JS inclusion
-    * @access private
-     */
-    function _js_script_tags() 
-    {
-        $res = '';
-        if ($this->_require_extra_js) {
-            if ($this->js_src_inline) {
-                if (!$content = file_get_contents('formex_js/formex_extras.js', 1)) { // look in include_path too
-                    $content = "alert('ERROR: formex() formex_extras.js count not be found in include_path')";
-                }
-                $res .= "<script type=\"text/javascript\">\n<!--\n$content\n-->\n</script>";
-            }
-            else {
-                $res = sprintf('<script type="text/javascript" src="%s/formex_extras.js"></script>',
-                                $this->extra_js_src_dir);
-            }
-        }
-        if (isset($this->_require_calendar_js)) {
-            $dir = $this->extra_js_src_dir . '/dynarchCalendar';
-            $res .= '
-            
-           <script type="text/javascript">
-              function initCalendarSetup(elem, format, showtime) {
-                  if (!elem.isSetup) {
-                      Calendar.setup({
-                        inputField     :    elem.id,   // id of the input field
-                        ifFormat       :    format,       // format of the input field
-                        showsTime      :    showtime, // show the time selector?
-                        timeFormat     :    12
-                        });
-                      elem.isSetup = true;
-                  }
-              }
-           </script>
-           <script type="text/javascript" src="'.$dir.'/calendar.js"></script>
-           <script type="text/javascript" src="'.$dir.'/lang/calendar-en.js"></script>
-           <script type="text/javascript" src="'.$dir.'/calendar-setup.js"></script>
-           <link rel="stylesheet" type="text/css" href="'.$dir.'/calendar-blue2.css">';
-        }
-        if ($this->_has_richTextEditor) {
-            $js = 'tinymce/jscripts/tiny_mce/tiny_mce.js';
-            $js2 = 'rte-tinymce.js';
-            $css = 'tinymce/jscripts/tiny_mce/tiny_mce.js';
-            if ($this->js_src_inline) {
-                $content = "alert('formex(): js_src_inline is deprecated for _field_richTextEditor')";
-                $res = '<script type="text/javascript"><!--' . "\n";
-                $res .= $content . "\n// -->\n";
-                $res .= '</script>';
-            }
-            else {
-                $res .= "<script type=\"text/javascript\" src=\"{$this->rte_js_src_dir}/$js\"></script>
-                         <script type=\"text/javascript\" src=\"{$this->rte_js_src_dir}/$js2\"></script>
-                         <link rel=\"stylesheet\" type=\"text/css\" href=\"{$this->rte_js_src_dir}/$css\">";
-            }
-        }
-        return $res;
-    }
 
 
     /**
@@ -934,7 +811,7 @@ class formex extends PEAR
             }
 
         }
-        $fields["FORM"] =  $this->_js_script_tags() . $this->form_start();
+        $fields["FORM"] =  $this->form_start();
 
         return $fields;
     }
@@ -957,8 +834,6 @@ class formex extends PEAR
             $this->add_element($this->form_instance_token_key, array('token', 'hidden'));
             $this->set_elem_value($this->form_instance_token_key, $this->instance_token);
         }
-
-        $res = $this->_js_script_tags();
 
         $res .= $this->start();
 
@@ -1399,8 +1274,9 @@ class formex extends PEAR
 
 
 
-    /* ========== lookout the static functions are coming ================== */
 
+
+    /* ========== lookout the static functions are coming ================== */
 
 
 
