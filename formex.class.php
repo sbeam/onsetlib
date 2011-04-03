@@ -548,15 +548,6 @@ class formex extends PEAR
                     $this->_require_extra_js = 1;
                     $this->_require_calendar_js = 1;
                     break;
-                case 'autocomplete':
-                    $this->_require_extra_js = 1;
-                    $this->_require_autocomplete_js = 1;
-                    break;
-                case 'expandable_fieldset':
-                    $this->encoding = "multipart/form-data"; // hack in case we have Files
-                    $this->_onload_funcs['expandable_fieldset'] = 'initFields();';
-                    $this->_require_extra_js = 1;
-                    break;
                 case 'captcha':
                     $this->_require_extra_js = 1;
                     break;
@@ -832,10 +823,6 @@ class formex extends PEAR
            <script type="text/javascript" src="'.$dir.'/lang/calendar-en.js"></script>
            <script type="text/javascript" src="'.$dir.'/calendar-setup.js"></script>
            <link rel="stylesheet" type="text/css" href="'.$dir.'/calendar-blue2.css">';
-        }
-        if (isset($this->_require_autocomplete_js)) {
-            $dir = $this->extra_js_src_dir;
-            $res .= '<script type="text/javascript" src="'.$dir.'/jquery-ui-1.8.7.autocomplete-bundle.min.js" ></script>';
         }
         if ($this->_has_richTextEditor) {
             $js = 'tinymce/jscripts/tiny_mce/tiny_mce.js';
