@@ -893,6 +893,7 @@ class formex_field
 
         if (!empty($this->attribs['multiple'])) {
             $this->attribs['class'] .= ' multiple';
+            if (is_array($fval)) $fval = join(', ', $fval);
         }
 
         $this->extra_attribs .= " data-minlength=\"$minlength\" ";
