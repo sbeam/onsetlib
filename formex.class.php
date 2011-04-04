@@ -396,6 +396,11 @@ class formex extends PEAR
      */
     var $convert_empty_string_to_null = false;
 
+    /**
+     * path to save uploaded files. can also be set per-file with element attrib 'save_path'
+     */
+    var $upload_save_dir = '/tmp';
+
 
    /**
     * sets up the posted_vars array and sets the form action to $PHP_SELF to
@@ -847,8 +852,8 @@ class formex extends PEAR
                 if (isset($elem->attribs["exact_dims"])) { 
                     $elem->descrip .= "<br>(" . $elem->attribs["exact_dims"] . " exact)";
                 }
-                elseif (isset($elem->attribs["maxdims"])) { 
-                    $elem->descrip .= "<br>(" . $elem->attribs["maxdims"] . " max)";
+                elseif (isset($elem->attribs["max_dims"])) { 
+                    $elem->descrip .= "<br>(" . $elem->attribs["max_dims"] . " max)";
                 }
                 elseif (isset($elem->attribs["resize_method"]) && isset($elem->attribs["dims"])) { 
                     $elem->descrip .= sprintf("<br>(%s to %s)", $elem->attribs["resize_method"], $elem->attribs["dims"]);
@@ -1133,7 +1138,7 @@ class formex extends PEAR
 
                     case 'file':
                     case 'image_upload':
-                        if (!isset($_FILES[$ff])) {
+                        if (!self::is_uploaded_file($ff)) {
                             $ferr = "%s' must be uploaded";
                         }
                         break;
@@ -1173,6 +1178,11 @@ class formex extends PEAR
                             $ferr = "'%s' is a required field.";
                         }
                 }
+            }
+
+            /* check if the image is not too crazy huge */
+            if (empty($ferr) && $this->_elems[$k]->type == 'image_upload' && self::is_uploaded_file($ff)) {
+                $ferr = $this->_validate_image_dims($k);
             }
 
             /* attrib 'validate' in any field can point to a function or method that should return a error message on error */
@@ -1257,6 +1267,13 @@ class formex extends PEAR
                     $vals[$k] = (!empty($posted[$aux]))? $posted[$aux] : $posted[$ff];
                     break;
 
+                case 'image_upload':
+                case 'file':
+                    if (self::is_uploaded_file($ff)) {
+                        $vals[$k] = $this->_save_uploaded_file($k);
+                    }
+                    break;
+
                 default:
                     if (isset($posted[$ff])) {
                         $vals[$k] = $posted[$ff];
@@ -1273,10 +1290,163 @@ class formex extends PEAR
 
 
 
+    /**
+     * check that an uploaded image conforms to the max_dims or exact_dims 
+     * attributes of the element, if given
+     *
+     * @return string if it does not conform
+     */
+    protected function _validate_image_dims($elem_id) {
 
+        if (!isset($this->_elems[$elem_id])) return;
+
+        $ff = $this->field_prefix . $elem_id; 
+
+        $file = $_FILES[$ff]["tmp_name"];
+        $eattr =& $this->_elems[$elem_id]->attribs;
+
+        if (substr($_FILES[$ff]['type'], 0, 6) == 'image/' and (isset($eattr["max_dims"]) || isset($eattr["exact_dims"]))) {
+            $imginfo = getimagesize($file);
+
+            if (isset($eattr["exact_dims"])) {  // we will check the dimensions of it make sure it matches the rect
+
+                list($targ_wid, $targ_ht) = split("x", $eattr["exact_dims"]);
+
+                if (($targ_wid != $imginfo[0]) || ($targ_ht != $imginfo[1]) ) {
+                    return "Uploaded image was an incorrect size! Dimensions need to be " . $eattr["exact_dims"].
+                        " pixels. Yours was " . $imginfo[0] . "x" . $imginfo[1] . "."; 
+                }
+
+            }
+            elseif (isset($eattr["max_dims"])) {  // make sure this fits within
+
+                list($img_maxwidth, $img_maxheight) = split("x", $eattr["max_dims"]);
+
+                if (($img_maxwidth < $imginfo[0]) || ($img_maxheight < $imginfo[1]) ) {
+                    return "Uploaded image was too large! Maximum dimensions are " . $eattr["max_dims"].
+                        " pixels. Yours was " . $imginfo[0] . "x" . $imginfo[1] . ".";
+                }
+            }
+        }
+    }
+
+
+    /**
+     * save the file for the associated field to the configured location and 
+     * with a new name
+     */
+    protected function _save_uploaded_file($elem_id) {
+        $imginfo = array();
+
+        $ff = $this->field_prefix . $elem_id; 
+        $file = $_FILES[$ff]["tmp_name"];
+
+        $newname = $this->_safe_upload_filename($elem_id, $_FILES[$ff]["name"]);
+
+        if (PEAR::isError($newname)) { return $newname; }
+
+        $imginfo = array('name' => $newname, 
+                         'type' => $_FILES[$ff]["type"],
+                         'size' => intval(filesize($file) / 1024));
+
+
+        $path = $this->_get_upload_save_path($elem_id);
+
+        $dest = $path . "/" . $newname;
+
+        if (!copy($file, $dest)) 
+            return $this->raiseError("$dest could not be saved.");
+
+        $imginfo['fullpath'] = $dest;
+
+        return $imginfo;
+    }
+
+
+    /**
+     * return the full path to where we are supposed to be saving the file
+     *
+     * look in the elem's attrib 'save_path', otherwise $this->upload_save_dir
+     */
+    protected function _get_upload_save_path($elem_id) {
+        return (isset($this->_elems[$elem_id]->attribs['save_path']))?  $this->_elems[$elem_id]->attribs['save_path'] : $this->upload_save_dir;
+    }
+
+
+    /**
+     * gen a safe filename for a new uploaded file - whitelist filter 
+     * characters, and dont overwrite existing files
+     *
+     * elem's attribs: 'filename' override the user-supplied filename with this
+     *                 'rand_filename' create a random-ish filename
+     *                 'unique_filename' use supplied filename, append a uniqid
+     *                 default - use supplied, increment until not overwriting
+     *
+     * @param $elem_id  an element id
+     * @param $orig original filename 
+     * @return string
+     */
+    protected function _safe_upload_filename($elem_id, $orig) {
+
+        $ext = strtolower(substr($orig, strrpos($orig, '.')));
+
+        $eattr =& $this->_elems[$elem_id]->attribs;
+
+        if (isset($eattr["filename"])) {
+            $newname = preg_replace("/\s/", "_", $eattr["filename"]);
+            $newname = preg_replace("/[^A-Za-z0-9_.-]/", "", $newname);
+        }
+        elseif (isset($eattr['rand_filename'])) {
+            $newname = uniqid();
+        } 
+        else {
+
+            $newname = substr($orig, 0, strrpos($orig, '.'));
+            $newname = preg_replace("/\s/", "_", $newname);
+            $newname = preg_replace("/[^A-Za-z0-9_.-]/", "", $newname);
+
+            if (isset($eattr['unique_filename'])) {
+                $newname .= '.'. uniqid();
+            }
+            else {
+
+                $path = $this->_get_upload_save_path($elem_id);
+
+                if (file_exists($path . "/" . $orig)) {
+                    $inc = 1;
+                    $base = $newname;
+                    do {
+                        $newname = $base . '.' . $inc;
+                        $dest = $path  .'/'. $newname . $ext;
+                        $inc++;
+                    }
+                    while (file_exists($dest));
+                }
+            }
+        }
+        $newname .= $ext; // put the old extension back
+        return $newname;
+    }
 
 
     /* ========== lookout the static functions are coming ================== */
+
+
+    /**
+     * check if the given form var contains an uploaded file
+     */
+    static public function is_uploaded_file($formvar) {
+
+        $file = $_FILES[$formvar]["tmp_name"];
+
+        if (is_uploaded_file($file)) {
+            return true;
+        } elseif (empty($file) or 4 == $_FILES[$formvar]['error']) { // there was no file uploaded - its OK!
+            return false;
+        } else {
+            $this->raiseError('file upload error :'.$_FILES[$formvar]['error']);
+        }
+    }
 
 
 
