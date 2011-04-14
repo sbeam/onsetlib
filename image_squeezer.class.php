@@ -62,7 +62,7 @@ class image_squeezer extends PEAR {
      * @param str $file - FULL path to a image file (gif, jpeg, png)
      * @return true on succes or PEAR::Error
      */
-    function imagestretcher($file) {
+    function __construct($file) {
 
         if (!is_file($file)) {
             if (!preg_match('/^\w+:\/\//', $file)) {
