@@ -211,10 +211,10 @@ class imagestretcher extends PEAR {
      * @return bool/PE
     */
     function resize($w, $h, $method='shrink') {
-        if ($method == 'crop') {
+        if ($method == 'crop' or $method == 'shrink_to_size') {
             return $this->shrink_to_size($w, $h);
         }
-        elseif ($method == 'shrink') {
+        elseif ($method == 'shrink' or $method == 'shrink_to_fit') {
             return $this->shrink_to_fit($w, $h);
         }
         else {
