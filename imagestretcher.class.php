@@ -211,10 +211,10 @@ class imagestretcher extends PEAR {
      * @return bool/PE
     */
     function resize($w, $h, $method='shrink') {
-        if ($method == 'crop') {
+        if ($method == 'crop' or $method == 'shrink_to_size') {
             return $this->shrink_to_size($w, $h);
         }
-        elseif ($method == 'shrink') {
+        elseif ($method == 'shrink' or $method == 'shrink_to_fit') {
             return $this->shrink_to_fit($w, $h);
         }
         else {
@@ -225,57 +225,60 @@ class imagestretcher extends PEAR {
     /**
      * create a new smaller image with the specific given dimensions. Image
      * will be resize proportionately the minimum amount needed to fit, and
-     * areas in the original that do not fit in the new box will be cut off
-     *
-     * @todo right now this results in distortion unless $tw == $th
+     * areas in the original that do not fit in the new box will be cropped.
+     * ie, it preserves aspect, and center-crops to fit target.
      *
      * @param new width
      * @param new height
      * @return true or PEAR::Error
      */
-    function shrink_to_size($tw, $th) {
+    function shrink_to_size($Wt, $Ht) {
 
-       $w = $this->get_img_width();
-       $h = $this->get_img_height();
+       $W = $this->get_img_width();
+       $H = $this->get_img_height();
 
-       if (!$w or !$h) {
+       if (!$W or !$H) {
            return $this->raiseError("could not find original image dimensions");
        }
        else {
            $source = $this->get_source_img();
            if (PEAR::isError($source)) return $source; 
+           $off_x =0; # top-left offsets for source crop
+           $off_y =0;
+           $Wc = $W; # crop frame dimensions
+           $Hc = $H; 
 
            // the logic.
-           if($h > $th || $w > $tw){
-               if ($h > $w) {
-                   $offset_y = (intval($h - $w) / 2);
-                   $offset_x = 0;
-                   $side = $w;
+           if($H > $Ht || $W > $Wt){
+
+               if ($W/$H > $Wt/$Ht) {
+                   $Wc = (int) ($Wt/$Ht)*$H;
+                   $off_x = (int) ($W - $Wc) / 2;
                }
-               if ($w >= $h) {
-                   $offset_x = intval(($w - $h) / 2);
-                   $offset_y = 0;
-                   $side = $h;
+               else {
+                   $Hc = (int) (($Ht/$Wt)*$W);
+                   $off_y = (int) (($H - $Hc) / 2);
                }
+
            }
            else {
                return;
            }
 
            //create dst image
-           if (!$this->new_img = imagecreatetruecolor($tw, $th)) {
-               return $this->raiseError("could not create a new thumbnail image ($tw, $th)!");
+           if (!$this->new_img = imagecreatetruecolor($Wt, $Ht)) {
+               return $this->raiseError("could not create a new thumbnail image ($Wt, $Ht)!");
            }
 
-           $this->_preallocate_transparency($tw, $th);
+           $this->_preallocate_transparency($Wt, $Ht);
            //
            //resize and copy image
-           if (!imagecopyresampled($this->new_img, $this->source_img, 0,0,$offset_x,$offset_y,$tw,$th,$side,$side)) {
+           if (!imagecopyresampled($this->new_img, $this->source_img, 0,0, $off_x,$off_y,$Wt,$Ht,$Wc,$Hc)) {
                return $this->raiseError("could not copy resized image");
            }
 
-           $this->new_width = $tw;
-           $this->new_height = $th;
+           $this->new_width = $Wt;
+           $this->new_height = $Ht;
            return true;
        }
     }
