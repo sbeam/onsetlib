@@ -45,6 +45,7 @@ class fu_HTML_Table extends HTML_Table {
     // add a row for sorting, with all kinds of magic links
     function addSortRow ($colmap, $col_ordered = null, $attribs = null, $type='TH', $extra_get_vars=null, $order_dir='A') {
         
+        $thead = $this->getHeader(); // activates thead/tbody
         $cells = array();
         foreach ($colmap as $col => $label) {
             if ($col == $col_ordered) {
@@ -70,7 +71,7 @@ class fu_HTML_Table extends HTML_Table {
             }
         }
 
-        parent::addRow($cells, $this->th_class, $type);
+        $thead->addRow($cells, $this->th_class, $type);
     }
 
     function _invertDir($dir) {
