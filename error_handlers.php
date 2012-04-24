@@ -172,7 +172,7 @@ function nice_error_handler ($errno, $errstr, $errfile, $errline) {
 /*** pear_error_handler()
 formats a detailed err msg from a PEAR::Error object, and passes to the function  defined
 in set_error_handler() (see init.php) ***/
-function pear_error_handler (&$err_obj) {
+function pear_error_handler ($err_obj) {
     $error_string = sprintf("%s\n\nDEBUGINFO:{ [errorCode=%s] %s}:",
                             $err_obj->getMessage(),
                             $err_obj->getCode(),
