@@ -19,8 +19,8 @@
 	$mcFileManagerConfig['general.allow_export'] = "demo,tools,disabled_tools,debug";
 
 	// Preview options
-	$mcFileManagerConfig['preview.wwwroot'] = ''; // absolute or relative from this script path (c:/Inetpub/wwwroot).
-	$mcFileManagerConfig['preview.urlprefix'] = "{proto}://{host}/"; // domain name
+    $mcFileManagerConfig['preview.wwwroot'] = VISYCS_FILEMANAGER_ROOTPATH; // absolute or relative from this script path (c:/Inetpub/wwwroot).
+    $mcFileManagerConfig['preview.urlprefix'] = "{proto}://{host}".SITE_MEDIA_URLPATH.'/'.VISYCS_FILEMANAGER_SUBDIR; // domain name
 	$mcFileManagerConfig['preview.urlsuffix'] = "";
 	$mcFileManagerConfig['preview.include_file_pattern'] = '';
 	$mcFileManagerConfig['preview.exclude_file_pattern'] = '';
