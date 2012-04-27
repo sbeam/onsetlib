@@ -62,7 +62,12 @@ function error_display($errno, $errstr, $errfile, $errline) {
                    htmlentities($errstr),
                    $errline,
                    $errfile);
-    echo error_format($msg, $color);
+
+    print '<div class="userError">';
+    print $msg;
+    print '<pre class="debug-backtrace">';
+    debug_print_backtrace();
+    print '</pre></div>';
 }
 
 
@@ -219,6 +224,10 @@ function error_mail_alert ($errno, $errstr, $errfile, $errline) {
     $msg .= sprintf("location : http://%s%s\n\n", $_SERVER['HTTP_HOST'], $_SERVER['REQUEST_URI']);
 
     ob_start();
+       print "==== debug_print_backtrace() ===========================\n";
+       debug_print_backtrace();
+       print "========================================================\n\n";
+
        print "POST data:\n";
        print_r($_POST);
        print "\n\nGET data:\n";
@@ -227,8 +236,6 @@ function error_mail_alert ($errno, $errstr, $errfile, $errline) {
            print "\n\nauth. data:\n";
            print_r($auth->auth);
        }
-       print "\n\nCOOKIES data:\n";
-       print_r($_COOKIES);
        print "\n\nENVIRONMENT:\n";
        print_r($_SERVER);
     $msg .= ob_get_contents();
