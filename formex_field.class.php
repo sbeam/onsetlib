@@ -558,11 +558,12 @@ class formex_field
                             ($fval !== "" && $fval == $k)? "checked=\"1\"" : "",
                             $this->extra_attribs);
 
-            $label = sprintf("<label class=\"%s\">%s",
+            $label = sprintf("<label class=\"%s\">%s<span>%s</span></label>",
                             (isset($this->attribs['class']))? $this->attribs['class'] : $this->element_class,
+                            $btn,
                             $v);
 
-            $res .= $label . $btn . '</label>';
+            $res .= $label;
             $res .= "</div>";
         }
         $res .= "</div>";
